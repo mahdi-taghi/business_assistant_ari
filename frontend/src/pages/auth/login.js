@@ -29,8 +29,14 @@ function LoginPage() {
       router.replace("/Chat");
     } catch (err) {
       console.error("Login failed", err);
-      const message = err?.message || "ورود ناموفق بود. لطفاً جزئیات خود را بررسی کنید و دوباره تلاش کنید.";
-      setError(message);
+      
+      // Check if the error is related to email verification
+      if (err?.message && err.message.includes("email not verified")) {
+        setError("لطفاً ابتدا ایمیل خود را تأیید کنید. ایمیل تأیید به آدرس شما ارسال شده است.");
+      } else {
+        const message = err?.message || "ورود ناموفق بود. لطفاً جزئیات خود را بررسی کنید و دوباره تلاش کنید.";
+        setError(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -98,6 +104,16 @@ function LoginPage() {
             {error && (
               <div className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
                 {error}
+                {error.includes("ایمیل خود را تأیید کنید") && (
+                  <div className="mt-2">
+                    <Link 
+                      href="/auth/verify-email" 
+                      className="text-blue-400 hover:text-blue-300 font-medium text-xs underline"
+                    >
+                      ارسال مجدد ایمیل تأیید
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 

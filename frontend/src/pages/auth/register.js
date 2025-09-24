@@ -44,7 +44,8 @@ function RegisterPage() {
         phone_number: form.phone_number || undefined,
         password: form.password,
       });
-      router.replace("/Profile");
+      // Redirect to verification page instead of profile
+      router.replace("/auth/verify-email?email=" + encodeURIComponent(form.email));
     } catch (err) {
       console.error("Registration failed", err);
       const message = err?.message || "ثبت نام ناموفق بود. لطفاً جزئیات خود را بررسی کنید.";

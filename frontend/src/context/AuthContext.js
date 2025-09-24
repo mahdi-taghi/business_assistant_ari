@@ -236,12 +236,13 @@ export function AuthProvider({ children }) {
         body: payload,
       });
 
-      await login({ email: payload.email, password: payload.password });
+      // Don't automatically login after registration
+      // User needs to verify email first
       return response;
     } finally {
       setLoading(false);
     }
-  }, [login]);
+  }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -272,28 +273,48 @@ export function AuthProvider({ children }) {
     return result;
   }, [authenticatedRequest]);
 
+  const resendVerification = useCallback(async () => {
+    try {
+      const result = await authenticatedRequest("/auth/resend-verification/", {
+        method: "POST",
+      });
+      return result;
+    } catch (error) {
+      console.error("Failed to resend verification", error);
+      throw error;
+    }
+  }, [authenticatedRequest]);
+
+  const isEmailVerified = useMemo(() => {
+    return user?.security?.email_verified || false;
+  }, [user]);
+
   const value = useMemo(() => ({
     user,
     loading,
     initializing,
     isAuthenticated,
+    isEmailVerified,
     login,
     register,
     logout,
     refreshUser: () => fetchCurrentUser(accessToken),
     updateProfile,
+    resendVerification,
     authenticatedRequest,
   }), [
     user,
     loading,
     initializing,
     isAuthenticated,
+    isEmailVerified,
     login,
     register,
     logout,
     fetchCurrentUser,
     accessToken,
     updateProfile,
+    resendVerification,
     authenticatedRequest,
   ]);
 
