@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChatSession, Message } from "@/Entities/all";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MessageSquare, Trash2, Calendar } from "lucide-react";
+import { Search, MessageSquare, Trash2, Calendar, X, Filter, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import { createPageUrl } from "@/utils";
@@ -23,6 +23,7 @@ export default function History() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   useEffect(() => {
     loadSessions();
@@ -65,32 +66,119 @@ export default function History() {
     <div className="flex h-full bg-slate-900">
       <div className="w-full border-r border-slate-700 bg-slate-900/95 backdrop-blur-sm flex flex-col">
         {/* Header */}
-        <div className="p-4 md:p-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold text-white mb-4">تاریخچه چت</h1>
+        <div className="p-4 md:p-6 border-b border-slate-700/50 bg-gradient-to-r from-slate-900/95 to-slate-800/95 backdrop-blur-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <h1 className="text-xl font-bold text-white">تاریخچه چت</h1>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input
-                placeholder="جستجو در گفتگوها..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-slate-800/50 border-slate-700/50 text-slate-100 placeholder-slate-400"
-              />
-            </div>
+            {/* Enhanced Search */}
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className={`relative transition-all duration-300 ${
+                  isSearchFocused 
+                    ? 'scale-[1.02]' 
+                    : 'scale-100'
+                }`}
+                animate={{
+                  scale: isSearchFocused ? 1.02 : 1,
+                }}
+              >
+                <div className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                  isSearchFocused ? 'text-blue-400' : 'text-slate-400'
+                }`}>
+                  <Search className="w-4 h-4" />
+                </div>
+                
+                <Input
+                  placeholder="جستجو در گفتگوها..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
+                  className={`pl-10 pr-10 h-12 bg-slate-800/60 border-2 transition-all duration-300 text-slate-100 placeholder-slate-400 rounded-xl ${
+                    isSearchFocused 
+                      ? 'border-blue-500/50 shadow-lg shadow-blue-500/10 bg-slate-800/80' 
+                      : 'border-slate-700/50 hover:border-slate-600/50'
+                  }`}
+                />
+                
+                {/* Clear button */}
+                <AnimatePresence>
+                  {searchQuery && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-slate-700 hover:bg-slate-600 rounded-full flex items-center justify-center transition-colors duration-200"
+                    >
+                      <X className="w-3 h-3 text-slate-300" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+              
+              {/* Search results count */}
+              <AnimatePresence>
+                {searchQuery && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    className="mt-2 text-xs text-slate-400"
+                  >
+                    {filteredSessions.length} گفتگو یافت شد
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
             
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="bg-slate-800/50 border-slate-700/50 text-slate-100">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recent">جدیدترین</SelectItem>
-                <SelectItem value="oldest">قدیمی‌ترین</SelectItem>
-                <SelectItem value="messages">بیشترین پیام</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Enhanced Sort */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                  <Filter className="w-4 h-4" />
+                </div>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="pl-10 h-12 bg-slate-800/60 border-2 border-slate-700/50 hover:border-slate-600/50 text-slate-100 rounded-xl transition-all duration-300 hover:bg-slate-800/80">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="recent" className="text-slate-100 hover:bg-slate-700 focus:bg-slate-700">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        جدیدترین
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="oldest" className="text-slate-100 hover:bg-slate-700 focus:bg-slate-700">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        قدیمی‌ترین
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="messages" className="text-slate-100 hover:bg-slate-700 focus:bg-slate-700">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4" />
+                        بیشترین پیام
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </motion.div>
           </div>
         </div>
 
