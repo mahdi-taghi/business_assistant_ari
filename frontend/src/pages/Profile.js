@@ -121,11 +121,16 @@ export default function Profile() {
         setIsEditingProfile(false);
         setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        setFormErrors(result.data || {});
+        const errorData = result.data || {};
+        if (typeof errorData === 'string') {
+          setFormErrors({ general: errorData });
+        } else {
+          setFormErrors(errorData);
+        }
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      setFormErrors({ general: "خطا در بروزرسانی پروفایل" });
+      setFormErrors({ general: "خطا در بروزرسانی پروفایل. لطفاً دوباره تلاش کنید." });
     }
     setIsSubmitting(false);
   };
@@ -163,11 +168,16 @@ export default function Profile() {
         setIsChangingPassword(false);
         setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        setFormErrors(result.data || {});
+        const errorData = result.data || {};
+        if (typeof errorData === 'string') {
+          setFormErrors({ general: errorData });
+        } else {
+          setFormErrors(errorData);
+        }
       }
     } catch (error) {
       console.error("Error changing password:", error);
-      setFormErrors({ general: "خطا در تغییر رمز عبور" });
+      setFormErrors({ general: "خطا در تغییر رمز عبور. لطفاً دوباره تلاش کنید." });
     }
     setIsSubmitting(false);
   };

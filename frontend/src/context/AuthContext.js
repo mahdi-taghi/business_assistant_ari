@@ -246,9 +246,21 @@ export function AuthProvider({ children }) {
         body: payload,
       });
 
-      // Don't automatically login after registration
-      // User needs to verify email first
-      return response;
+      // Check if registration was successful
+      if (response && !response.error) {
+        return { success: true, data: response };
+      } else {
+        return { 
+          success: false, 
+          error: response?.error || "ثبت نام ناموفق بود. لطفاً جزئیات خود را بررسی کنید." 
+        };
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      return { 
+        success: false, 
+        error: "خطا در ثبت نام. لطفاً دوباره تلاش کنید." 
+      };
     } finally {
       setLoading(false);
     }

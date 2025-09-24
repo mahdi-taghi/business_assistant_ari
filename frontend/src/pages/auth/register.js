@@ -37,19 +37,23 @@ function RegisterPage() {
 
     setIsSubmitting(true);
     try {
-      await register({
+      const result = await register({
         first_name: form.first_name,
         last_name: form.last_name,
         email: form.email,
         phone_number: form.phone_number || undefined,
         password: form.password,
       });
-      // Redirect to verification page instead of profile
-      router.replace("/auth/verify-email?email=" + encodeURIComponent(form.email));
+      
+      if (result.success) {
+        // Redirect to verification page instead of profile
+        router.replace("/auth/verify-email?email=" + encodeURIComponent(form.email));
+      } else {
+        setError(result.error || "ثبت نام ناموفق بود. لطفاً جزئیات خود را بررسی کنید.");
+      }
     } catch (err) {
       console.error("Registration failed", err);
-      const message = err?.message || "ثبت نام ناموفق بود. لطفاً جزئیات خود را بررسی کنید.";
-      setError(message);
+      setError("خطا در ثبت نام. لطفاً دوباره تلاش کنید.");
     } finally {
       setIsSubmitting(false);
     }

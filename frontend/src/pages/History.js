@@ -36,6 +36,7 @@ export default function History() {
       setSessions(data);
     } catch (error) {
       console.error("Error loading sessions:", error);
+      // Could add user-friendly error message here if needed
     }
     setIsLoading(false);
   };
