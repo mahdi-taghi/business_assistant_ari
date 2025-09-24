@@ -25,18 +25,16 @@ function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(form);
-      router.replace("/Chat");
+      const result = await login(form);
+      
+      if (result.success) {
+        router.replace("/Chat");
+      } else {
+        setError(result.error || "ورود ناموفق بود. لطفاً جزئیات خود را بررسی کنید و دوباره تلاش کنید.");
+      }
     } catch (err) {
       console.error("Login failed", err);
-      
-      // Check if the error is related to email verification
-      if (err?.message && err.message.includes("email not verified")) {
-        setError("لطفاً ابتدا ایمیل خود را تأیید کنید. ایمیل تأیید به آدرس شما ارسال شده است.");
-      } else {
-        const message = err?.message || "ورود ناموفق بود. لطفاً جزئیات خود را بررسی کنید و دوباره تلاش کنید.";
-        setError(message);
-      }
+      setError("خطا در ورود. لطفاً دوباره تلاش کنید.");
     } finally {
       setIsSubmitting(false);
     }

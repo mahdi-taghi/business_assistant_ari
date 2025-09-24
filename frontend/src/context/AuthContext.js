@@ -213,7 +213,11 @@ export function AuthProvider({ children }) {
       });
 
       if (!data?.access || !data?.refresh) {
-        throw new Error("Login failed");
+        // Return error object instead of throwing
+        return { 
+          success: false, 
+          error: "اطلاعات ورود نادرست است. لطفاً ایمیل و رمز عبور خود را بررسی کنید." 
+        };
       }
 
       setAccessToken(data.access);
@@ -222,7 +226,13 @@ export function AuthProvider({ children }) {
       persistToken(REFRESH_TOKEN_KEY, data.refresh);
 
       const profile = await fetchCurrentUser(data.access);
-      return profile;
+      return { success: true, user: profile };
+    } catch (error) {
+      console.error("Login error:", error);
+      return { 
+        success: false, 
+        error: "خطا در ورود. لطفاً دوباره تلاش کنید." 
+      };
     } finally {
       setLoading(false);
     }
