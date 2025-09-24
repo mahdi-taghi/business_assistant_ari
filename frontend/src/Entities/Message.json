@@ -1,0 +1,32 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Reference to chat session"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message content"
+    },
+    "sender_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "bot"
+      ],
+      "description": "Who sent the message"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When message was sent"
+    }
+  },
+  "required": [
+    "session_id",
+    "content",
+    "sender_type"
+  ]
+}

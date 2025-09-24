@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: django_backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis_chat
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=1
+      - DJANGO_SUPERUSER_USERNAME=admin@localhost
+      - DJANGO_SUPERUSER_EMAIL=admin@localhost
+      - DJANGO_SUPERUSER_PASSWORD=1
+      - DJANGO_SUPERUSER_FIRST_NAME=admin
+      - DJANGO_SUPERUSER_LAST_NAME=local
+    depends_on:
+      - redis_chat
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py createsuperuser --noinput || true &&
+             daphne -b 0.0.0.0 -p 8000 core.asgi:application"
+
+  redis_chat:
+    image: redis:8.2.1-alpine
+    container_name: redis_chat
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass "1" --appendonly yes
+    restart: unless-stopped

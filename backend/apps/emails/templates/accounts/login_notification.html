@@ -1,0 +1,18 @@
+<h2>New Login to Your Account</h2>
+
+<p>Hello {{ user.get_display_name }},</p>
+
+<p>We detected a new login to your account.</p>
+
+<h3>Login Details:</h3>
+<ul>
+    <li>Time: {{ login_time }}</li>
+    <li>IP Address: {{ ip_address }}</li>
+    <li>Device: {{ device }}</li>
+    <li>Browser: {{ browser }}</li>
+</ul>
+
+<p>If this wasn't you, please change your password immediately and contact support.</p>
+
+<p>Best regards,<br>
+Business Assistant Team</p>

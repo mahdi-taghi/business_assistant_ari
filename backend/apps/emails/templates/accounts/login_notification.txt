@@ -1,0 +1,16 @@
+New Login to Your Account
+
+Hello {{ user.get_display_name }},
+
+We detected a new login to your account.
+
+Login Details:
+- Time: {{ login_time }}
+- IP Address: {{ ip_address }}
+- Device: {{ device }}
+- Browser: {{ browser }}
+
+If this wasn't you, please change your password immediately and contact support.
+
+Best regards,
+Business Assistant Team
