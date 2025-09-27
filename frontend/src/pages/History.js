@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { ChatSession, Message } from "@/Entities/all";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MessageSquare, Trash2, Calendar, X, Filter, Sparkles } from "lucide-react";
+import { Search, MessageSquare, Calendar, X, Filter, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import { createPageUrl } from "@/utils";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/select";
 
 import SessionCard from "../components/history/SessionCard";
+import { useChatApi } from "@/integrations/chatApi";
 
 export default function History() {
   const router = useRouter();
@@ -24,31 +24,35 @@ export default function History() {
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { listActiveChats } = useChatApi();
+
+  const loadSessions = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await listActiveChats();
+      setSessions(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+      setSessions([]);
+    }
+    setIsLoading(false);
+  }, [listActiveChats]);
 
   useEffect(() => {
     loadSessions();
-  }, []);
-
-  const loadSessions = async () => {
-    setIsLoading(true);
-    try {
-      const data = await ChatSession.list("-last_activity");
-      setSessions(data);
-    } catch (error) {
-      console.error("Error loading sessions:", error);
-      // Could add user-friendly error message here if needed
-    }
-    setIsLoading(false);
-  };
+  }, [loadSessions]);
 
   const handleSessionClick = (session) => {
     navigate(createPageUrl(`Chat?sessionId=${session.id}`));
   };
 
-  const filteredSessions = sessions.filter(session =>
-    session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (session.first_message_preview || "").toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSessions = sessions.filter(session => {
+    const preview = session.first_message_preview || session.last_message?.content || "";
+    return (
+      session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      preview.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   const sortedSessions = [...filteredSessions].sort((a, b) => {
     switch (sortBy) {

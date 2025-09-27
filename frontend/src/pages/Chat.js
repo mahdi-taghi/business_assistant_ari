@@ -1,198 +1,424 @@
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { ChatSession, Message, User } from "@/Entities/all";
-import { InvokeLLM } from "@/integrations/Core";
 import { AnimatePresence } from "framer-motion";
 import { Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-
+import { useAuth } from "@/context/AuthContext";
+import { useChatApi } from "@/integrations/chatApi";
 import MessageBubble from "../components/chat/MessageBubble";
 import ChatInput from "../components/chat/ChatInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
 
+function buildWsUrl(chatId, token) {
+  if (!chatId || !token) {
+    return null;
+  }
+
+  const base = process.env.NEXT_PUBLIC_WS_URL;
+  const encodedToken = encodeURIComponent(token);
+
+  if (base) {
+    const trimmed = base.endsWith("/") ? base.slice(0, -1) : base;
+    return `${trimmed}/ws/chat/${chatId}/?token=${encodedToken}`;
+  }
+
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  if (apiBase) {
+    try {
+      let candidate = apiBase;
+      const hasProtocol = /^https?:\/\//i.test(candidate);
+      if (!hasProtocol) {
+        if (typeof window !== "undefined") {
+          const origin = window.location.origin;
+          if (candidate.startsWith("/")) {
+            candidate = `${origin}${candidate}`;
+          } else {
+            candidate = `${origin.replace(/\/$/, "")}/${candidate}`;
+          }
+        } else {
+          candidate = `http://${candidate}`;
+        }
+      }
+
+      const apiUrl = new URL(candidate);
+      const wsProtocol = apiUrl.protocol === "https:" ? "wss" : "ws";
+      const port = apiUrl.port ? `:${apiUrl.port}` : "";
+      return `${wsProtocol}://${apiUrl.hostname}${port}/ws/chat/${chatId}/?token=${encodedToken}`;
+    } catch (error) {
+      console.warn("Failed to parse NEXT_PUBLIC_API_URL for websocket", error);
+    }
+  }
+
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+  return `${protocol}://${window.location.host}/ws/chat/${chatId}/?token=${encodedToken}`;
+}
+
+function parseMaybeJson(value, fallback) {
+  if (!value) {
+    return fallback;
+  }
+  if (typeof value === "object") {
+    return value;
+  }
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function normalizeMessage(message) {
+  if (!message) {
+    return null;
+  }
+
+  const role = message.role || message.sender_type || message.message_role;
+  const timestamp = message.created_at || message.timestamp || new Date().toISOString();
+
+  return {
+    id: message.id || message.message_id || `msg-${Date.now()}`,
+    role: role === "bot" ? "assistant" : role || "assistant",
+    content: message.content || "",
+    timestamp,
+    ai_response_metadata: parseMaybeJson(message.ai_response_metadata, null),
+    ai_references: parseMaybeJson(message.ai_references, []),
+    tokens_used: message.tokens_used ? Number(message.tokens_used) : undefined,
+    response_time: message.response_time ? Number(message.response_time) : undefined,
+  };
+}
+
+function createWelcomeMessage() {
+  return {
+    id: `welcome-${Date.now()}`,
+    role: "assistant",
+    content: "سلام! من دستیار هوشمند شما هستم. اینجا هستم تا در هر سوال یا کاری که دارید کمکتان کنم. امروز چطور می‌تونم کمکتان کنم؟",
+    timestamp: new Date().toISOString(),
+  };
+}
+
 export default function Chat() {
+  const router = useRouter();
+  const { initializing, isAuthenticated, getAccessToken } = useAuth();
+  const { createChat, fetchMessages, listActiveChats, listArchivedChats } = useChatApi();
+
   const [messages, setMessages] = useState([]);
   const [currentSession, setCurrentSession] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [socketConnected, setSocketConnected] = useState(false);
+
   const messagesEndRef = useRef(null);
-  const router = useRouter();
-  const navigate = useCallback((to, opts) => router.push(to, undefined, opts), [router]);
-  const search = router.asPath.split('?')[1] || '';
+  const socketRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
 
-  const createNewSession = useCallback(async () => {
-    const newSession = await ChatSession.create({
-      title: "گفتگوی جدید",
-      first_message_preview: "",
-      message_count: 0,
-      last_activity: new Date().toISOString()
-    });
-    setCurrentSession(newSession);
-    setMessages([]);
-    navigate(`/Chat?sessionId=${newSession.id}`, { replace: true });
-    
-    // Add welcome message
-    const welcomeMessage = {
-      id: 'welcome',
-      content: "سلام! من دستیار هوشمند شما هستم. اینجا هستم تا در هر سوال یا کاری که دارید کمکتان کنم. امروز چطور می‌تونم کمکتان کنم؟",
-      sender_type: "bot",
-      timestamp: new Date().toISOString()
-    };
-    setMessages([welcomeMessage]);
-  }, [navigate]);
-
-  const loadSession = useCallback(async (sessionId) => {
-    setIsLoading(true);
-    try {
-      const session = await ChatSession.get(sessionId);
-      if (session) {
-        // Fetch messages ordered by timestamp
-        const existingMessages = await Message.filter({ session_id: sessionId }, "timestamp");
-        setCurrentSession(session);
-        setMessages(existingMessages);
-      } else {
-        // if session not found, create a new one
-        console.warn(`Session with ID ${sessionId} not found. Creating a new one.`);
-        await createNewSession();
-      }
-    } catch (error) {
-      console.error("Error loading session:", error);
-      // Fallback to creating a new session if loading fails
-      await createNewSession();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [createNewSession]);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(search);
-    const sessionId = searchParams.get("sessionId");
-
-    if (sessionId) {
-      loadSession(sessionId);
-    } else {
-      createNewSession();
-    }
-  }, [search, loadSession, createNewSession]);
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, isTyping, scrollToBottom]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-  
-  const handleSendMessage = async (content) => {
-    if (!currentSession) return;
+  const appendMessage = useCallback((message) => {
+    const normalized = normalizeMessage(message);
+    if (!normalized) {
+      return;
+    }
+    setMessages((prev) => [...prev, normalized]);
+  }, []);
 
-    setIsLoading(true);
-    setIsTyping(true);
+  const loadMessages = useCallback(async (chatId) => {
+    try {
+      const data = await fetchMessages(chatId);
+      const history = Array.isArray(data) ? data.map(normalizeMessage).filter(Boolean) : [];
+      const finalMessages = history.length ? history : [createWelcomeMessage()];
+      setMessages(finalMessages);
+    } catch (error) {
+      console.error("Failed to load chat messages", error);
+      setMessages([createWelcomeMessage()]);
+    }
+  }, [fetchMessages]);
 
-    // Create user message
-    const userMessage = await Message.create({
-      session_id: currentSession.id,
-      content,
-      sender_type: "user",
-      timestamp: new Date().toISOString()
-    });
+  const handleSocketMessage = useCallback((event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      switch (payload.type) {
+        case "status":
+          setStatusMessage(payload.message || "");
+          if (payload.message) {
+            setIsTyping(true);
+          }
+          break;
+        case "message_received":
+          setStatusMessage("");
+          break;
+        case "ai_response":
+          appendMessage({ ...payload.data, role: "assistant" });
+          setIsTyping(false);
+          setIsSending(false);
+          setStatusMessage("");
+          setCurrentSession((prev) => prev ? {
+            ...prev,
+            message_count: (prev.message_count || 0) + 1,
+            last_activity: new Date().toISOString(),
+          } : prev);
+          break;
+        case "error":
+          setIsTyping(false);
+          setIsSending(false);
+          setStatusMessage(payload.message || "مشکلی پیش آمد");
+          appendMessage({
+            id: `error-${Date.now()}`,
+            role: "system",
+            content: payload.message || "مشکلی پیش آمد. لطفاً دوباره تلاش کنید.",
+            timestamp: new Date().toISOString(),
+          });
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error("Failed to parse WebSocket message", error);
+    }
+  }, [appendMessage]);
 
-    // Update messages immediately
-    setMessages(prev => [...prev, userMessage]);
-
-    // Update session with first message if this is the first user message
-    // We need to check the actual messages state after the update to determine if it's the first user message for the current session.
-    // Or, check against the initially loaded messages + the current user message.
-    // A simpler approach for the initial title is to check `currentSession.first_message_preview`
-    if (!currentSession.first_message_preview) { // If first_message_preview is empty, it's a new session or a session without initial user input
-      const sessionTitle = content.length > 50 ? content.substring(0, 50) + "..." : content;
-      await ChatSession.update(currentSession.id, {
-        title: sessionTitle,
-        first_message_preview: content,
-        last_activity: new Date().toISOString()
-      });
-      // Update currentSession state to reflect the new title
-      setCurrentSession(prev => ({ ...prev, title: sessionTitle, first_message_preview: content }));
-    } else {
-       await ChatSession.update(currentSession.id, {
-        last_activity: new Date().toISOString()
-      });
+  const connectWebSocket = useCallback(async (chatId, attempt = 0) => {
+    if (!chatId) {
+      return;
     }
 
     try {
-      // Get AI response
-      const aiResponse = await InvokeLLM({
-        prompt: `شما یک دستیار هوشمند مفید برای یک برنامه سازمانی هستید. به طور طبیعی و مفید پاسخ دهید: "${content}"`,
-        add_context_from_internet: false
-      });
+      const token = await getAccessToken();
+      if (!token) {
+        setStatusMessage("برای گفتگو باید وارد شوید.");
+        return;
+      }
+      const wsUrl = buildWsUrl(chatId, token);
 
-      // Create bot message
-      const botMessage = await Message.create({
-        session_id: currentSession.id,
-        content: aiResponse,
-        sender_type: "bot",
-        timestamp: new Date().toISOString()
-      });
-
-      setMessages(prev => [...prev, botMessage]);
-
-      // Update session stats
-      await ChatSession.update(currentSession.id, {
-        message_count: (currentSession.message_count || 0) + 2, // +2 for user and bot messages
-        last_activity: new Date().toISOString()
-      });
-      setCurrentSession(prev => ({ ...prev, message_count: (prev.message_count || 0) + 2 }));
-
-
-      // Update user stats
-      try {
-        const user = await User.me();
-        await User.updateMyUserData({
-          total_messages: (user.total_messages || 0) + 1 // +1 for the user's message
-        });
-      } catch (error) {
-        // User might not be logged in or have profile yet, safely ignore
-        console.warn("Could not update user total_messages:", error);
+      if (!wsUrl) {
+        console.warn("Unable to determine WebSocket URL");
+        setStatusMessage("نشانی سرور گفت‌وگو نامشخص است.");
+        return;
       }
 
+      if (socketRef.current) {
+        socketRef.current.close(1000, "Reconnecting");
+      }
+
+      const ws = new WebSocket(wsUrl);
+      socketRef.current = ws;
+
+      ws.onopen = () => {
+        setSocketConnected(true);
+        setStatusMessage("");
+        setIsTyping(false);
+      };
+
+      ws.onmessage = handleSocketMessage;
+
+      ws.onerror = () => {
+        ws.close();
+      };
+
+      ws.onclose = (event) => {
+        setSocketConnected(false);
+        setIsTyping(false);
+        socketRef.current = null;
+
+        if (event.code === 4003) {
+          setStatusMessage("دسترسی مجاز نیست. لطفاً دوباره وارد شوید.");
+        } else if (event.code === 4004) {
+          setStatusMessage("گفتگو پیدا نشد یا دسترسی ندارید.");
+        } else if (event.code === 4008) {
+          setStatusMessage("این گفتگو بایگانی شده است.");
+        } else if (!event.wasClean) {
+          setStatusMessage("اتصال به سرور برقرار نشد. تلاش دوباره...");
+        }
+
+        const shouldRetry = ![4003, 4004, 4008].includes(event.code) && attempt < 5;
+        if (shouldRetry) {
+          const nextAttempt = attempt + 1;
+          const delay = Math.min(5000, 1000 * nextAttempt);
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectWebSocket(chatId, nextAttempt);
+          }, delay);
+        }
+      };
     } catch (error) {
-      console.error("Error getting AI response:", error);
-      const errorMessage = await Message.create({
-        session_id: currentSession.id,
-        content: "عذرخواهی می‌کنم، اما در حال حاضر در پاسخ دادن مشکل دارم. لطفاً لحظه‌ای دیگر دوباره تلاش کنید.",
-        sender_type: "bot",
-        timestamp: new Date().toISOString()
-      });
-      setMessages(prev => [...prev, errorMessage]);
+      console.error("Failed to establish WebSocket connection", error);
+    }
+  }, [getAccessToken, handleSocketMessage]);
+
+  const pickChatFromLists = useCallback(async (chatId) => {
+    const numericId = Number(chatId);
+    if (!Number.isFinite(numericId)) {
+      return null;
     }
 
-    setIsTyping(false);
-    setIsLoading(false);
-  };
+    const active = await listActiveChats();
+    let chat = active.find((item) => item.id === numericId);
+
+    if (!chat) {
+      const archived = await listArchivedChats();
+      chat = archived.find((item) => item.id === numericId) || null;
+    }
+
+    return chat;
+  }, [listActiveChats, listArchivedChats]);
+
+  const createNewSession = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const chat = await createChat();
+      setCurrentSession(chat);
+      setStatusMessage("");
+
+      if (chat?.id) {
+        router.replace(`/Chat?sessionId=${chat.id}`, undefined, { shallow: true });
+        await connectWebSocket(chat.id);
+      }
+    } catch (error) {
+      console.error("Failed to create chat", error);
+      setStatusMessage("ایجاد گفتگو ناموفق بود");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [connectWebSocket, createChat, router]);
+
+  const loadSession = useCallback(async (chatId) => {
+    setIsLoading(true);
+    try {
+      const chat = await pickChatFromLists(chatId);
+      if (!chat) {
+        console.warn(`Chat with ID ${chatId} not found, creating a new one.`);
+        await createNewSession();
+        return;
+      }
+
+      setCurrentSession(chat);
+      await loadMessages(chat.id);
+      await connectWebSocket(chat.id);
+    } catch (error) {
+      console.error("Failed to load chat session", error);
+      setStatusMessage("بارگذاری گفتگو ناموفق بود");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [connectWebSocket, createNewSession, loadMessages, pickChatFromLists]);
+
+  useEffect(() => {
+    if (!router.isReady || initializing || !isAuthenticated) {
+      return;
+    }
+
+    const { sessionId } = router.query;
+    const resolvedId = Array.isArray(sessionId) ? sessionId[0] : sessionId;
+
+    if (!resolvedId) {
+      createNewSession();
+      return;
+    }
+
+    const numericId = Number(resolvedId);
+    if (currentSession?.id === numericId) {
+      if (!socketRef.current) {
+        connectWebSocket(numericId);
+      }
+      return;
+    }
+
+    loadSession(resolvedId);
+  }, [
+    router,
+    initializing,
+    isAuthenticated,
+    currentSession,
+    connectWebSocket,
+    createNewSession,
+    loadSession,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (socketRef.current) {
+        socketRef.current.close(1000, "Component unmounted");
+        socketRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleSendMessage = useCallback(async (content) => {
+    if (!content || !currentSession?.id) {
+      return;
+    }
+
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      setStatusMessage("ارتباط با سرور برقرار نیست. لطفاً لحظه‌ای دیگر تلاش کنید.");
+      return;
+    }
+
+    const now = new Date().toISOString();
+    appendMessage({
+      id: `local-${Date.now()}`,
+      role: "user",
+      content,
+      timestamp: now,
+    });
+
+    setIsSending(true);
+    setIsTyping(true);
+    setStatusMessage("");
+    setCurrentSession((prev) => prev ? {
+      ...prev,
+      message_count: (prev.message_count || 0) + 1,
+      last_activity: now,
+    } : prev);
+
+    try {
+      socketRef.current.send(JSON.stringify({ content }));
+    } catch (error) {
+      console.error("Failed to send message", error);
+      setIsSending(false);
+      setIsTyping(false);
+      setStatusMessage("ارسال پیام ناموفق بود");
+    }
+  }, [appendMessage, currentSession]);
+
+  const hasMessages = messages.length > 0;
 
   return (
     <div className="flex flex-col h-full bg-slate-900">
-      {/* Chat Header */}
       <div className="flex-shrink-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 px-4 md:px-6 py-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
-           <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors duration-200 text-white md:hidden" />
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse hidden md:block" />
+            <div className={`w-2 h-2 rounded-full ${socketConnected ? "bg-green-400" : "bg-red-500"} animate-pulse hidden md:block`} />
             <div>
               <h1 className="text-base md:text-lg font-semibold text-white truncate max-w-[150px] sm:max-w-xs md:max-w-md">
                 {currentSession?.title || "دستیار هوشمند آری"}
               </h1>
-              <p className="text-xs md:text-sm text-slate-400">همیشه در خدمت شما</p>
+              <p className="text-xs md:text-sm text-slate-400">
+                {socketConnected ? "همیشه در خدمت شما" : "در حال تلاش برای اتصال..."}
+              </p>
             </div>
           </div>
-          
+
           <Button
             onClick={createNewSession}
             variant="outline"
             size="sm"
             className="border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent"
+            disabled={isSending}
           >
             <Plus className="w-4 h-4 md:mr-2" />
             <span className="hidden md:inline">چت جدید</span>
@@ -200,10 +426,14 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 py-8">
-          {messages.length === 0 && !isLoading ? ( // Only show start message if no messages and not loading
+          {isLoading ? (
+            <div className="text-center py-10">
+              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-slate-400">در حال آماده‌سازی گفتگو...</p>
+            </div>
+          ) : !hasMessages ? (
             <div className="max-w-md mx-auto py-12 px-6 bg-slate-800/60 border border-slate-700 rounded-3xl shadow-xl backdrop-blur-sm">
               <div className="flex flex-col items-center">
                 <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4 shadow-lg transform-gpu hover:scale-105 transition-transform">
@@ -211,34 +441,37 @@ export default function Chat() {
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">هر سوالی داری بپرس</h2>
                 <p className="text-sm text-slate-300 mb-6">هر سوالی داشتی بپرس، من اینجا هستم تا کمک کنم!</p>
-                <div className="w-full"> 
-                </div>
               </div>
             </div>
           ) : (
             <AnimatePresence>
               {messages.map((message, index) => (
                 <MessageBubble 
-                  key={message.id || index} 
-                  message={message} 
+                  key={message.id || index}
+                  message={message}
                   isLatest={index === messages.length - 1}
                 />
               ))}
             </AnimatePresence>
           )}
-          
+
           <AnimatePresence>
             {isTyping && <TypingIndicator />}
           </AnimatePresence>
-          
+
+          {statusMessage && (
+            <div className="text-center text-xs text-slate-400 mt-4">
+              {statusMessage}
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Chat Input */}
       <ChatInput
         onSendMessage={handleSendMessage}
-        isLoading={isLoading}
+        isLoading={isSending || !socketConnected}
         placeholder="هر سوالی داری بپرس..."
       />
     </div>

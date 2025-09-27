@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from "react";
-import { User, ChatSession } from "@/Entities/all";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +30,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 
 import StatsCard from "../components/profile/StatsCard";
+import { useChatApi } from "@/integrations/chatApi";
 
 function formatDate(value, options) {
   try {
@@ -56,6 +56,7 @@ export default function Profile() {
   const [stats, setStats] = useState({ totalChats: 0, totalMessages: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
+  const { listActiveChats, listArchivedChats } = useChatApi();
   
   // Profile editing states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -83,6 +84,28 @@ export default function Profile() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const loadUserData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [active, archived] = await Promise.all([
+        listActiveChats(),
+        listArchivedChats(),
+      ]);
+
+      const chats = [...(Array.isArray(active) ? active : []), ...(Array.isArray(archived) ? archived : [])];
+      const totalChats = chats.length;
+      const totalMessages = chats.reduce((sum, chat) => sum + (chat.message_count || 0), 0);
+
+      setStats({
+        totalChats,
+        totalMessages,
+      });
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    }
+    setIsLoading(false);
+  }, [listActiveChats, listArchivedChats]);
+
   useEffect(() => {
     if (user) {
       loadUserData();
@@ -92,22 +115,7 @@ export default function Profile() {
         phone: user.phone || ""
       });
     }
-  }, [user]);
-
-  const loadUserData = async () => {
-    setIsLoading(true);
-    try {
-      // Load stats
-      const sessions = await ChatSession.filter({ created_by: user.email });
-      setStats({
-        totalChats: sessions.length,
-        totalMessages: user.total_messages || 0
-      });
-    } catch (error) {
-      console.error("Error loading user data:", error);
-    }
-    setIsLoading(false);
-  };
+  }, [user, loadUserData]);
 
   const handleProfileSave = async () => {
     setIsSubmitting(true);

@@ -311,6 +311,13 @@ export function AuthProvider({ children }) {
     return user?.security?.email_verified || false;
   }, [user]);
 
+  const getValidAccessToken = useCallback(async () => {
+    if (accessToken) {
+      return accessToken;
+    }
+    return await refreshAccessToken();
+  }, [accessToken, refreshAccessToken]);
+
   const value = useMemo(() => ({
     user,
     loading,
@@ -324,6 +331,8 @@ export function AuthProvider({ children }) {
     updateProfile,
     resendVerification,
     authenticatedRequest,
+    accessToken,
+    getAccessToken: getValidAccessToken,
   }), [
     user,
     loading,
@@ -338,6 +347,7 @@ export function AuthProvider({ children }) {
     updateProfile,
     resendVerification,
     authenticatedRequest,
+    getValidAccessToken,
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

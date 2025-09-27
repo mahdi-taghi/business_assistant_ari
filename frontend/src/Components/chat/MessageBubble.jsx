@@ -12,7 +12,25 @@ function formatTime(iso) {
 }
 
 export default function MessageBubble({ message, isLatest }) {
-  const isUser = message.sender_type === "user";
+  const role = message?.role || message?.sender_type || "assistant";
+  const isUser = role === "user";
+  const isSystem = role === "system";
+  const timestamp = message?.timestamp || message?.created_at;
+
+  if (isSystem) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="flex justify-center mb-4"
+      >
+        <div className="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-3 py-2 rounded-full">
+          {message.content}
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -53,8 +71,8 @@ export default function MessageBubble({ message, isLatest }) {
           />
         </div>
         
-        {message.timestamp && (
-          <p className="text-xs text-slate-400 mt-1 px-2">{formatTime(message.timestamp)}</p>
+        {timestamp && (
+          <p className="text-xs text-slate-400 mt-1 px-2">{formatTime(timestamp)}</p>
         )}
       </div>
       
