@@ -113,11 +113,11 @@ function AdminPanel() {
       
       // Fetch all data in parallel
       const [usersRes, chatsRes, messagesRes, emailLogsRes, errorLogsRes] = await Promise.all([
-        authenticatedRequest("/api/adminpanel/users/"),
-        authenticatedRequest("/api/adminpanel/chats/"),
-        authenticatedRequest("/api/adminpanel/messages/"),
-        authenticatedRequest("/api/adminpanel/email-logs/"),
-        authenticatedRequest("/api/adminpanel/error-logs/")
+        authenticatedRequest("/adminpanel/users/"),
+        authenticatedRequest("/adminpanel/chats/"),
+        authenticatedRequest("/adminpanel/messages/"),
+        authenticatedRequest("/adminpanel/email-logs/"),
+        authenticatedRequest("/adminpanel/error-logs/")
       ]);
 
       if (usersRes.ok) {
@@ -162,7 +162,7 @@ function AdminPanel() {
   // User management handlers
   const handleUserToggle = async (userId, currentStatus) => {
     try {
-      const response = await authenticatedRequest(`/api/adminpanel/users/${userId}/toggle_active/`, {
+      const response = await authenticatedRequest(`/adminpanel/users/${userId}/toggle_active/`, {
         method: "POST"
       });
       
@@ -182,7 +182,7 @@ function AdminPanel() {
     if (!confirm("Are you sure you want to delete this user?")) return;
     
     try {
-      const response = await authenticatedRequest(`/api/adminpanel/users/${userId}/`, {
+      const response = await authenticatedRequest(`/adminpanel/users/${userId}/`, {
         method: "DELETE"
       });
       
@@ -196,9 +196,9 @@ function AdminPanel() {
 
   const handleCreateUser = async () => {
     try {
-      const response = await authenticatedRequest("/api/adminpanel/users/", {
+      const response = await authenticatedRequest("/adminpanel/users/", {
         method: "POST",
-        body: JSON.stringify(userForm)
+        body: userForm
       });
       
       if (response.ok) {
@@ -213,9 +213,9 @@ function AdminPanel() {
 
   const handleUpdateUser = async () => {
     try {
-      const response = await authenticatedRequest(`/api/adminpanel/users/${selectedUser.id}/`, {
+      const response = await authenticatedRequest(`/adminpanel/users/${selectedUser.id}/`, {
         method: "PUT",
-        body: JSON.stringify(userForm)
+        body: userForm
       });
       
       if (response.ok) {
@@ -230,9 +230,9 @@ function AdminPanel() {
 
   const handleResetPassword = async () => {
     try {
-      const response = await authenticatedRequest(`/api/adminpanel/users/${selectedUser.id}/reset_password/`, {
+      const response = await authenticatedRequest(`/adminpanel/users/${selectedUser.id}/reset_password/`, {
         method: "POST",
-        body: JSON.stringify(passwordForm)
+        body: passwordForm
       });
       
       if (response.ok) {
@@ -247,9 +247,9 @@ function AdminPanel() {
 
   const handleSendEmail = async () => {
     try {
-      const response = await authenticatedRequest("/api/adminpanel/send-email/", {
+      const response = await authenticatedRequest("/adminpanel/send-email/", {
         method: "POST",
-        body: JSON.stringify(emailForm)
+        body: emailForm
       });
       
       if (response.ok) {
@@ -265,7 +265,7 @@ function AdminPanel() {
     if (!confirm("Are you sure you want to delete this email log?")) return;
     
     try {
-      const response = await authenticatedRequest(`/api/adminpanel/email-logs/${logId}/`, {
+      const response = await authenticatedRequest(`/adminpanel/email-logs/${logId}/`, {
         method: "DELETE"
       });
       
