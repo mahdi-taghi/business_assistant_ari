@@ -157,16 +157,37 @@ export function AuthProvider({ children }) {
     let tokenToUse = accessToken;
 
     const makeCall = async (token) => {
+      const { method = "GET", body, headers: customHeaders, ...fetchOptions } = options;
+      const headers = new Headers(customHeaders || {});
+
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+
+      let requestBody = body;
+      const hasBody = body !== undefined && body !== null;
+      const isFormData = hasBody && typeof FormData !== "undefined" && body instanceof FormData;
+      const isBlob = hasBody && typeof Blob !== "undefined" && body instanceof Blob;
+      const isArrayBuffer = hasBody && typeof ArrayBuffer !== "undefined" && body instanceof ArrayBuffer;
+      const isReadableStream = hasBody && typeof ReadableStream !== "undefined" && body instanceof ReadableStream;
+      const isString = typeof body === "string";
+
+      if (hasBody && !isFormData && !isBlob && !isArrayBuffer && !isReadableStream && !isString) {
+        requestBody = JSON.stringify(body);
+        if (!headers.has("Content-Type")) {
+          headers.set("Content-Type", "application/json");
+        }
+      } else if (!hasBody) {
+        requestBody = undefined;
+      }
+
       const response = await fetch(
         path.startsWith("http") ? path : `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`,
         {
-          method: options.method || "GET",
-          headers: {
-            "Content-Type": options.body ? "application/json" : undefined,
-            ...(options.headers || {}),
-            Authorization: token ? `Bearer ${token}` : undefined,
-          },
-          body: options.body ? JSON.stringify(options.body) : undefined,
+          method,
+          headers,
+          body: requestBody,
+          ...fetchOptions,
         }
       );
 
@@ -175,12 +196,12 @@ export function AuthProvider({ children }) {
       }
 
       let data;
-      const text = await response.text();
-      if (text) {
+      const textResponse = await response.text();
+      if (textResponse) {
         try {
-          data = JSON.parse(text);
+          data = JSON.parse(textResponse);
         } catch (error) {
-          data = text;
+          data = textResponse;
         }
       }
 

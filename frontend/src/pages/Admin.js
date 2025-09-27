@@ -22,7 +22,7 @@ import {
   AdminEmailLogs,
   AdminErrorLogs,
   AdminModals
-} from "@/Components/admin";
+} from "@/components/admin";
 
 function AdminPanel() {
   const { user, logout, authenticatedRequest } = useAuth();

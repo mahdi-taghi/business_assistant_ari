@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { Select, SelectItem } from "@/components/ui/select";
 
 function AdminModals({
   // User Modal
@@ -177,12 +177,14 @@ function AdminModals({
                 <Label className="text-white">گیرندگان</Label>
                 <Select
                   value={emailForm.recipient_ids}
-                  onChange={(e) => setEmailForm({...emailForm, recipient_ids: Array.from(e.target.selectedOptions, option => option.value)})}
+                  onValueChange={(ids) => setEmailForm({ ...emailForm, recipient_ids: Array.isArray(ids) ? ids : [ids] })}
                   multiple
                   className="bg-slate-800 border-slate-700 text-white"
                 >
-                  {users.map(user => (
-                    <option key={user.id} value={user.id}>{user.full_name} ({user.email})</option>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {(user.full_name || user.email) + (user.email ? ` (${user.email})` : '')}
+                    </SelectItem>
                   ))}
                 </Select>
               </div>

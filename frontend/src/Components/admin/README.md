@@ -72,7 +72,7 @@ import {
   AdminEmailLogs,
   AdminErrorLogs,
   AdminModals
-} from "@/Components/admin";
+} from "@/components/admin";
 
 // Use components in your admin panel
 <AdminDashboard 

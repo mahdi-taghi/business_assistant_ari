@@ -46,12 +46,11 @@ export default function History() {
     navigate(createPageUrl(`Chat?sessionId=${session.id}`));
   };
 
-  const filteredSessions = sessions.filter(session => {
-    const preview = session.first_message_preview || session.last_message?.content || "";
-    return (
-      session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      preview.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const filteredSessions = sessions.filter((session) => {
+    const title = (session.title || '').toLowerCase();
+    const preview = (session.first_message_preview || session.last_message?.content || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return title.includes(query) || preview.includes(query);
   });
 
   const sortedSessions = [...filteredSessions].sort((a, b) => {
