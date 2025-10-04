@@ -98,3 +98,57 @@ body {
   background-clip: text;
 }
 
+/* Chat input textarea scrollbar styling */
+.chat-input-textarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-input-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-input-textarea::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 2px;
+}
+
+.chat-input-textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
+
+/* Simple textarea auto-resize */
+textarea {
+  resize: none !important;
+  overflow-y: hidden !important;
+  transition: height 0.1s ease !important;
+  box-sizing: border-box !important;
+}
+
+textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Scrollable textarea styling */
+textarea.scrollable {
+  overflow-y: auto !important;
+}
+
+/* Custom scrollbar for textarea */
+textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.1);
+  border-radius: 3px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 3px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}

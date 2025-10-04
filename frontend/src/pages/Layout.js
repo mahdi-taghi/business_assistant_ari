@@ -68,8 +68,8 @@ export default function Layout({ children, currentPageName }) {
 
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
-          <Sidebar className="border-r border-slate-700 bg-slate-900/95 backdrop-blur-sm">
-            <SidebarHeader className="border-b border-slate-700 p-6">
+          <Sidebar className="fixed left-0 top-0 h-screen w-72 border-r border-slate-700 bg-slate-900/95 backdrop-blur-sm z-50 flex flex-col hidden md:flex">
+            <SidebarHeader className="border-b border-slate-700 p-6 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center glow-effect">
                   <Bot className="w-6 h-6 text-white" />
@@ -81,7 +81,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </SidebarHeader>
 
-            <SidebarContent className="p-4">
+            <SidebarContent className="p-4 flex-1 overflow-y-auto">
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
@@ -104,7 +104,7 @@ export default function Layout({ children, currentPageName }) {
               </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-slate-700 p-4">
+            <SidebarFooter className="border-t border-slate-700 p-4 flex-shrink-0">
               <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/50">
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center">
                   <span className="text-white font-medium text-sm">{user?.first_name?.[0] || user?.email?.[0] || 'U'}</span>
@@ -121,7 +121,7 @@ export default function Layout({ children, currentPageName }) {
             </SidebarFooter>
           </Sidebar>
 
-          <main className="flex-1 flex flex-col bg-slate-900 overflow-hidden">
+          <main className="flex-1 flex flex-col bg-slate-900 overflow-hidden md:ml-72">
             <div className="sticky top-0 z-10 border-b border-slate-800/80 bg-slate-900/80 backdrop-blur supports-[backdrop-filter]:bg-slate-900/60">
               <div className="flex items-center gap-3 px-4 py-3">
                 <SidebarTrigger />
