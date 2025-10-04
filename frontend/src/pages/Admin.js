@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
+import { isAdminUser } from "@/utils";
 import { 
   MessageSquare, 
   LogOut,
@@ -24,7 +25,7 @@ import {
   AdminModals
 } from "@/components/admin";
 
-function AdminPanel() {
+const AdminPanel = memo(function AdminPanel() {
   const { user, logout, authenticatedRequest } = useAuth();
   const router = useRouter();
   const { forceAdmin } = router.query;
@@ -79,41 +80,8 @@ function AdminPanel() {
     require_change: true
   });
 
-  // Helper function to check admin status
-  const checkAdminStatus = (user) => {
-    if (!user) return false;
-    
-    // Check various possible admin fields
-    const adminFields = [
-      user.roles?.is_superuser,
-      user.roles?.is_admin,
-      user.roles?.is_staff,
-      user.is_superuser,
-      user.is_admin,
-      user.is_staff,
-      user.roles?.admin,
-      user.roles?.superuser,
-      user.roles?.staff,
-      user.admin,
-      user.superuser,
-      user.staff,
-      // Additional possible fields
-      user.role === 'admin',
-      user.role === 'superuser',
-      user.role === 'staff',
-      user.user_type === 'admin',
-      user.user_type === 'superuser',
-      user.user_type === 'staff',
-      user.permissions?.admin,
-      user.permissions?.superuser,
-      user.permissions?.staff
-    ];
-    
-    return adminFields.some(field => field === true);
-  };
-
   // Check if user is admin or superuser (or force admin mode)
-  const isAdmin = checkAdminStatus(user) || forceAdmin === 'true';
+  const isAdmin = isAdminUser(user) || forceAdmin === 'true';
 
   // Debug logging
   useEffect(() => {
@@ -200,7 +168,7 @@ function AdminPanel() {
   }, [isAdmin]);
 
   // Show warning if in force admin mode
-  if (forceAdmin === 'true' && !checkAdminStatus(user)) {
+  if (forceAdmin === 'true' && !isAdminUser(user)) {
     return (
       <div className="min-h-screen bg-slate-900">
         <div className="bg-yellow-600 text-white p-4 text-center">
@@ -217,7 +185,7 @@ function AdminPanel() {
                 </pre>
               </div>
               <div className="text-slate-300">
-                <strong>isAdmin (calculated):</strong> {checkAdminStatus(user) ? 'true' : 'false'}
+                <strong>isAdmin (calculated):</strong> {isAdminUser(user) ? 'true' : 'false'}
               </div>
               <div className="text-slate-300">
                 <strong>forceAdmin:</strong> {forceAdmin}
@@ -625,7 +593,7 @@ function AdminPanel() {
       />
     </div>
   );
-}
+});
 
 AdminPanel.disableLayout = true;
 AdminPanel.requiresAuth = true;

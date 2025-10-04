@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, memo } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 
@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
  * @param {boolean} props.requiresAuth - Whether authentication is required (default: true)
  * @returns {React.ReactNode} Protected content or loading/redirect
  */
-export default function AuthGuard({ children, requiresAuth = true }) {
+const AuthGuard = memo(function AuthGuard({ children, requiresAuth = true }) {
   const router = useRouter();
   const { isAuthenticated, initializing } = useAuth();
 
@@ -33,4 +33,6 @@ export default function AuthGuard({ children, requiresAuth = true }) {
   }
 
   return children;
-}
+});
+
+export default AuthGuard;

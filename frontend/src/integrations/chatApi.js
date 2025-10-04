@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, memo } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 /**

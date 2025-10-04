@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
 import { useChatApi } from "@/integrations/chatApi";
+import { parseMaybeJson, formatTime } from "@/utils";
 import MessageBubble from "../components/chat/MessageBubble";
 import ChatInput from "../components/chat/ChatInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
@@ -64,25 +65,6 @@ function buildWsUrl(chatId, token) {
   return null;
 }
 
-/**
- * Safely parses JSON string, returns fallback on error
- * @param {any} value - Value to parse
- * @param {any} fallback - Fallback value
- * @returns {any} Parsed value or fallback
- */
-function parseMaybeJson(value, fallback) {
-  if (!value) {
-    return fallback;
-  }
-  if (typeof value === "object") {
-    return value;
-  }
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    return fallback;
-  }
-}
 
 /**
  * Normalizes message object to consistent format
@@ -122,7 +104,7 @@ function createWelcomeMessage() {
   };
 }
 
-export default function Chat() {
+const Chat = memo(function Chat() {
   const router = useRouter();
   const { initializing, isAuthenticated, getAccessToken } = useAuth();
   const { createChat, fetchMessages, listActiveChats, listArchivedChats } = useChatApi();
@@ -523,4 +505,6 @@ export default function Chat() {
       </div>
     </div>
   );
-}
+});
+
+export default Chat;

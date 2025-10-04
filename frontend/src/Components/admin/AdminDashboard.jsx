@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,7 +12,7 @@ import {
   AlertTriangle 
 } from "lucide-react";
 
-function AdminDashboard({ stats, onRefresh, onNavigateToTab }) {
+const AdminDashboard = memo(function AdminDashboard({ stats, onRefresh, onNavigateToTab }) {
   return (
     <>
       {/* Stats Cards */}
@@ -97,6 +97,6 @@ function AdminDashboard({ stats, onRefresh, onNavigateToTab }) {
       </Card>
     </>
   );
-}
+});
 
 export default AdminDashboard;

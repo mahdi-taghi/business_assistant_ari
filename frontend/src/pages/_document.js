@@ -2,9 +2,15 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
-    <Html lang="en">
-      <Head />
-      <body className="antialiased">
+    <Html lang="fa" dir="rtl">
+      <Head>
+        <meta name="theme-color" content="#1e293b" />
+        <meta name="description" content="دستیار هوشمند آری - چت‌بات پیشرفته با قابلیت‌های سازمانی" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </Head>
+      <body className="antialiased font-sans">
         <Main />
         <NextScript />
       </body>

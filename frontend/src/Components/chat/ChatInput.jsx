@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Send, Loader2, Smile, Paperclip, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { detectTextDirection } from "@/utils/textDirection";
+import { detectTextDirection } from "@/utils";
 
-export default function ChatInput({ onSendMessage, isLoading, placeholder = "پیام خود را بنویسید..." }) {
+const ChatInput = memo(function ChatInput({ onSendMessage, isLoading, placeholder = "پیام خود را بنویسید..." }) {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [textDirection, setTextDirection] = useState("rtl");
@@ -45,35 +45,35 @@ export default function ChatInput({ onSendMessage, isLoading, placeholder = "پ�
     autoResize();
   }, [message]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     if (message.trim() && !isLoading) {
       onSendMessage(message.trim());
       setMessage("");
       setTextDirection("rtl");
     }
-  };
+  }, [message, isLoading, onSendMessage]);
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = useCallback((e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
-  };
+  }, [handleSubmit]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { value } = e.target;
     setMessage(value);
     setTextDirection(detectTextDirection(value));
-  };
+  }, []);
 
-  const handleFocus = () => {
+  const handleFocus = useCallback(() => {
     setIsFocused(true);
-  };
+  }, []);
 
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     setIsFocused(false);
-  };
+  }, []);
 
   return (
     <motion.div
@@ -206,4 +206,6 @@ export default function ChatInput({ onSendMessage, isLoading, placeholder = "پ�
       </div>
     </motion.div>
   );
-}
+});
+
+export default ChatInput;

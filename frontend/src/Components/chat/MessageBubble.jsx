@@ -1,23 +1,9 @@
-import React from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { Bot, User } from "lucide-react";
-import { detectTextDirection } from "@/utils/textDirection";
+import { detectTextDirection, formatTime } from "@/utils";
 
-/**
- * Formats ISO timestamp to HH:mm format
- * @param {string} iso - ISO timestamp string
- * @returns {string} Formatted time string
- */
-function formatTime(iso) {
-  try {
-    const date = new Date(iso);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch (error) {
-    return '';
-  }
-}
-
-export default function MessageBubble({ message, isLatest }) {
+const MessageBubble = memo(function MessageBubble({ message, isLatest }) {
   const role = message?.role || message?.sender_type || "assistant";
   const isUser = role === "user";
   const isSystem = role === "system";
@@ -103,4 +89,6 @@ export default function MessageBubble({ message, isLatest }) {
       )}
     </motion.div>
   );
-}
+});
+
+export default MessageBubble;

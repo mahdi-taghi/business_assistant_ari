@@ -20,8 +20,81 @@ export function createPageUrl(pageOrPath) {
   return '/';
 }
 
+/**
+ * Checks if a user has admin privileges
+ * @param {Object} user - User object
+ * @returns {boolean} True if user is admin
+ */
+export function isAdminUser(user) {
+  if (!user) return false;
+  
+  // Check various possible admin fields
+  const adminFields = [
+    user.roles?.is_superuser,
+    user.roles?.is_admin,
+    user.roles?.is_staff,
+    user.is_superuser,
+    user.is_admin,
+    user.is_staff,
+    user.roles?.admin,
+    user.roles?.superuser,
+    user.roles?.staff,
+    user.admin,
+    user.superuser,
+    user.staff,
+    user.role === 'admin',
+    user.role === 'superuser',
+    user.role === 'staff',
+    user.user_type === 'admin',
+    user.user_type === 'superuser',
+    user.user_type === 'staff',
+    user.permissions?.admin,
+    user.permissions?.superuser,
+    user.permissions?.staff
+  ];
+  
+  return adminFields.some(field => field === true);
+}
+
+/**
+ * Safely parses JSON string, returns fallback on error
+ * @param {any} value - Value to parse
+ * @param {any} fallback - Fallback value
+ * @returns {any} Parsed value or fallback
+ */
+export function parseMaybeJson(value, fallback) {
+  if (!value) return fallback;
+  if (typeof value === "object") return value;
+  
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
+}
+
+/**
+ * Formats ISO timestamp to HH:mm format
+ * @param {string} iso - ISO timestamp string
+ * @returns {string} Formatted time string
+ */
+export function formatTime(iso) {
+  try {
+    const date = new Date(iso);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (error) {
+    return '';
+  }
+}
+
 import { detectTextDirection } from "./textDirection";
 
 export { detectTextDirection };
 
-export default { createPageUrl, detectTextDirection };
+export default { 
+  createPageUrl, 
+  detectTextDirection, 
+  isAdminUser, 
+  parseMaybeJson, 
+  formatTime 
+};
