@@ -2,6 +2,13 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 
+/**
+ * AuthGuard component that protects routes requiring authentication
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components to render
+ * @param {boolean} props.requiresAuth - Whether authentication is required (default: true)
+ * @returns {React.ReactNode} Protected content or loading/redirect
+ */
 export default function AuthGuard({ children, requiresAuth = true }) {
   const router = useRouter();
   const { isAuthenticated, initializing } = useAuth();

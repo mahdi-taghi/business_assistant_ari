@@ -67,8 +67,8 @@ export default function History() {
   });
 
   return (
-    <div className="flex h-full bg-slate-900">
-      <div className="w-full border-r border-slate-700 bg-slate-900/95 backdrop-blur-sm flex flex-col">
+    <div className="h-full bg-slate-900">
+      <div className="w-full flex flex-col">
         {/* Header */}
         <div className="p-4 md:p-6 border-b border-slate-700/50 bg-gradient-to-r from-slate-900/95 to-slate-800/95 backdrop-blur-sm">
           <div className="flex items-center gap-3 mb-6">
@@ -186,7 +186,7 @@ export default function History() {
           </div>
         </div>
 
-        {/* Sessions List */}
+        {/* Scrollable Sessions List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           <AnimatePresence>
             {isLoading ? (

@@ -1,12 +1,18 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Bot, User } from "lucide-react";
-// small helper to format time as HH:mm
+import { detectTextDirection } from "@/utils/textDirection";
+
+/**
+ * Formats ISO timestamp to HH:mm format
+ * @param {string} iso - ISO timestamp string
+ * @returns {string} Formatted time string
+ */
 function formatTime(iso) {
   try {
-    const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch (e) {
+    const date = new Date(iso);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (error) {
     return '';
   }
 }
@@ -16,6 +22,8 @@ export default function MessageBubble({ message, isLatest }) {
   const isUser = role === "user";
   const isSystem = role === "system";
   const timestamp = message?.timestamp || message?.created_at;
+  const content = message?.content || "";
+  const textDirection = detectTextDirection(content);
 
   if (isSystem) {
     return (
@@ -25,8 +33,14 @@ export default function MessageBubble({ message, isLatest }) {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="flex justify-center mb-4"
       >
-        <div className="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-3 py-2 rounded-full">
-          {message.content}
+        <div
+          dir={textDirection}
+          className={`text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-3 py-2 rounded-full ${
+            textDirection === "rtl" ? "text-right" : "text-left"
+          }`}
+          style={{ unicodeBidi: "plaintext" }}
+        >
+          {content}
         </div>
       </motion.div>
     );
@@ -55,8 +69,14 @@ export default function MessageBubble({ message, isLatest }) {
             }
           `}
         >
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">
-            {message.content}
+          <p
+            dir={textDirection}
+            className={`text-sm leading-relaxed whitespace-pre-wrap ${
+              textDirection === "rtl" ? "text-right" : "text-left"
+            }`}
+            style={{ unicodeBidi: "plaintext" }}
+          >
+            {content}
           </p>
           
           {/* Message tail */}

@@ -6,6 +6,11 @@ const REFRESH_TOKEN_KEY = "chatbot-ui.refresh-token";
 
 const AuthContext = createContext(null);
 
+/**
+ * Safely retrieves token from localStorage
+ * @param {string} key - Storage key
+ * @returns {string|null} Token value or null
+ */
 function getStoredToken(key) {
   if (typeof window === "undefined") return null;
   try {
@@ -16,6 +21,11 @@ function getStoredToken(key) {
   }
 }
 
+/**
+ * Safely persists or removes token from localStorage
+ * @param {string} key - Storage key
+ * @param {string|null} value - Token value or null to remove
+ */
 function persistToken(key, value) {
   if (typeof window === "undefined") return;
   try {
@@ -29,6 +39,16 @@ function persistToken(key, value) {
   }
 }
 
+/**
+ * Performs HTTP request with optional authentication
+ * @param {string} path - Request path
+ * @param {Object} options - Request options
+ * @param {string} options.method - HTTP method
+ * @param {any} options.body - Request body
+ * @param {Object} options.headers - Request headers
+ * @param {string} options.token - Authentication token
+ * @returns {Promise<any>} Response data
+ */
 async function performRequest(path, { method = "GET", body, headers, token } = {}) {
   const url = path.startsWith("http") ? path : `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
   const requestHeaders = new Headers(headers || {});
@@ -57,6 +77,12 @@ async function performRequest(path, { method = "GET", body, headers, token } = {
   }
 }
 
+/**
+ * Authentication provider component that manages user state and authentication
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components
+ * @returns {React.ReactNode} Auth context provider
+ */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
@@ -374,6 +400,11 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * Hook to access authentication context
+ * @returns {Object} Authentication context value
+ * @throws {Error} If used outside AuthProvider
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

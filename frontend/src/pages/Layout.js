@@ -25,22 +25,9 @@ const getNavigationItems = (user) => {
     { title: "پروفایل", url: createPageUrl("Profile"), icon: User },
   ];
   
-  // Debug logging
-  console.log("=== LAYOUT DEBUG ===");
-  console.log("User object:", user);
-  console.log("User is_superuser:", user?.is_superuser);
-  console.log("User roles:", user?.roles);
-  console.log("User roles.is_admin:", user?.roles?.is_admin);
-  console.log("User roles.is_superuser:", user?.roles?.is_superuser);
-  console.log("User roles.list:", user?.roles?.list);
-  console.log("===================");
-  
   // Add admin panel for admin users
   if (user && (user.roles?.is_admin || user.roles?.is_superuser || user.is_superuser)) {
-    console.log("Adding Admin Panel to navigation");
     baseItems.push({ title: "پنل مدیریت", url: createPageUrl("Admin"), icon: Shield });
-  } else {
-    console.log("NOT adding Admin Panel - user is not admin");
   }
   
   return baseItems;

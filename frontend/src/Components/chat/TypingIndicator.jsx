@@ -2,6 +2,10 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Bot } from "lucide-react";
 
+/**
+ * TypingIndicator component that shows animated typing dots
+ * @returns {React.ReactNode} Typing indicator component
+ */
 export default function TypingIndicator() {
   return (
     <motion.div

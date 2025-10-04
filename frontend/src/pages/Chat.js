@@ -10,54 +10,66 @@ import MessageBubble from "../components/chat/MessageBubble";
 import ChatInput from "../components/chat/ChatInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
 
+/**
+ * Builds WebSocket URL for chat connection
+ * @param {string|number} chatId - Chat session ID
+ * @param {string} token - Authentication token
+ * @returns {string|null} WebSocket URL or null if invalid
+ */
 function buildWsUrl(chatId, token) {
   if (!chatId || !token) {
     return null;
   }
 
-  const base = process.env.NEXT_PUBLIC_WS_URL;
   const encodedToken = encodeURIComponent(token);
-
-  if (base) {
-    const trimmed = base.endsWith("/") ? base.slice(0, -1) : base;
+  
+  // Try explicit WebSocket URL first
+  const wsBase = process.env.NEXT_PUBLIC_WS_URL;
+  if (wsBase) {
+    const trimmed = wsBase.endsWith("/") ? wsBase.slice(0, -1) : wsBase;
     return `${trimmed}/ws/chat/${chatId}/?token=${encodedToken}`;
   }
 
+  // Fallback to API URL conversion
   const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-  if (apiBase) {
-    try {
-      let candidate = apiBase;
-      const hasProtocol = /^https?:\/\//i.test(candidate);
-      if (!hasProtocol) {
-        if (typeof window !== "undefined") {
-          const origin = window.location.origin;
-          if (candidate.startsWith("/")) {
-            candidate = `${origin}${candidate}`;
-          } else {
-            candidate = `${origin.replace(/\/$/, "")}/${candidate}`;
-          }
-        } else {
-          candidate = `http://${candidate}`;
-        }
+  try {
+    let candidate = apiBase;
+    const hasProtocol = /^https?:\/\//i.test(candidate);
+    
+    if (!hasProtocol) {
+      if (typeof window !== "undefined") {
+        const origin = window.location.origin;
+        candidate = candidate.startsWith("/") 
+          ? `${origin}${candidate}` 
+          : `${origin.replace(/\/$/, "")}/${candidate}`;
+      } else {
+        candidate = `http://${candidate}`;
       }
-
-      const apiUrl = new URL(candidate);
-      const wsProtocol = apiUrl.protocol === "https:" ? "wss" : "ws";
-      const port = apiUrl.port ? `:${apiUrl.port}` : "";
-      return `${wsProtocol}://${apiUrl.hostname}${port}/ws/chat/${chatId}/?token=${encodedToken}`;
-    } catch (error) {
-      console.warn("Failed to parse NEXT_PUBLIC_API_URL for websocket", error);
     }
+
+    const apiUrl = new URL(candidate);
+    const wsProtocol = apiUrl.protocol === "https:" ? "wss" : "ws";
+    const port = apiUrl.port ? `:${apiUrl.port}` : "";
+    return `${wsProtocol}://${apiUrl.hostname}${port}/ws/chat/${chatId}/?token=${encodedToken}`;
+  } catch (error) {
+    console.warn("Failed to parse NEXT_PUBLIC_API_URL for websocket", error);
   }
 
-  if (typeof window === "undefined") {
-    return null;
+  // Final fallback to current host
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${protocol}://${window.location.host}/ws/chat/${chatId}/?token=${encodedToken}`;
   }
 
-  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${protocol}://${window.location.host}/ws/chat/${chatId}/?token=${encodedToken}`;
+  return null;
 }
 
+/**
+ * Safely parses JSON string, returns fallback on error
+ * @param {any} value - Value to parse
+ * @param {any} fallback - Fallback value
+ * @returns {any} Parsed value or fallback
+ */
 function parseMaybeJson(value, fallback) {
   if (!value) {
     return fallback;
@@ -72,6 +84,11 @@ function parseMaybeJson(value, fallback) {
   }
 }
 
+/**
+ * Normalizes message object to consistent format
+ * @param {Object} message - Raw message object
+ * @returns {Object|null} Normalized message or null if invalid
+ */
 function normalizeMessage(message) {
   if (!message) {
     return null;
@@ -92,6 +109,10 @@ function normalizeMessage(message) {
   };
 }
 
+/**
+ * Creates welcome message for new chat sessions
+ * @returns {Object} Welcome message object
+ */
 function createWelcomeMessage() {
   return {
     id: `welcome-${Date.now()}`,

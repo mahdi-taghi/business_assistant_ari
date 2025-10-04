@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Send, Loader2, Smile, Paperclip, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { detectTextDirection } from "@/utils/textDirection";
 
 export default function ChatInput({ onSendMessage, isLoading, placeholder = "پیام خود را بنویسید..." }) {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [textDirection, setTextDirection] = useState("rtl");
   const textareaRef = useRef(null);
 
   // Simple auto-resize function
@@ -32,7 +34,6 @@ export default function ChatInput({ onSendMessage, isLoading, placeholder = "پ�
       textarea.style.overflowY = "auto";
       // Add scrollbar styling
       textarea.classList.add("scrollable");
-      console.log('Scroll enabled - content height:', scrollHeight, 'max height:', maxHeight);
     } else {
       textarea.style.overflowY = "hidden";
       textarea.classList.remove("scrollable");
@@ -49,6 +50,7 @@ export default function ChatInput({ onSendMessage, isLoading, placeholder = "پ�
     if (message.trim() && !isLoading) {
       onSendMessage(message.trim());
       setMessage("");
+      setTextDirection("rtl");
     }
   };
 
@@ -60,7 +62,9 @@ export default function ChatInput({ onSendMessage, isLoading, placeholder = "پ�
   };
 
   const handleInputChange = (e) => {
-    setMessage(e.target.value);
+    const { value } = e.target;
+    setMessage(value);
+    setTextDirection(detectTextDirection(value));
   };
 
   const handleFocus = () => {
@@ -123,14 +127,18 @@ export default function ChatInput({ onSendMessage, isLoading, placeholder = "پ�
                   onBlur={handleBlur}
                   placeholder={placeholder}
                   disabled={isLoading}
-                  className="w-full resize-none border-0 bg-transparent text-slate-100 placeholder:text-slate-400 focus:ring-0 focus:outline-none text-base leading-relaxed py-2 px-3 rounded-lg"
+                  dir={textDirection}
+                  className={`w-full resize-none border-0 bg-transparent text-slate-100 placeholder:text-slate-400 focus:ring-0 focus:outline-none text-base leading-relaxed py-2 px-3 rounded-lg ${
+                    textDirection === "rtl" ? "text-right" : "text-left"
+                  }`}
                   style={{ 
                     minHeight: '40px', 
                     height: '40px',
                     overflowY: 'hidden',
                     boxSizing: 'border-box',
                     lineHeight: '1.5',
-                    fontSize: '16px'
+                    fontSize: '16px',
+                    unicodeBidi: 'plaintext'
                   }}
                   rows={1}
                 />
