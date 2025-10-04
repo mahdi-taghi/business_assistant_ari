@@ -304,6 +304,16 @@ export default function Chat() {
       if (chat?.id) {
         router.replace(`/Chat?sessionId=${chat.id}`, undefined, { shallow: true });
         await connectWebSocket(chat.id);
+        
+        // Notify other tabs about new chat creation
+        try {
+          localStorage.setItem('newChatCreated', JSON.stringify({
+            chatId: chat.id,
+            timestamp: Date.now()
+          }));
+        } catch (error) {
+          console.warn('Failed to notify other tabs about new chat:', error);
+        }
       }
     } catch (error) {
       console.error("Failed to create chat", error);
@@ -404,6 +414,17 @@ export default function Chat() {
       message_count: (prev.message_count || 0) + 1,
       last_activity: now,
     } : prev);
+
+    // Notify other tabs about message activity
+    try {
+      localStorage.setItem('chatActivity', JSON.stringify({
+        chatId: currentSession.id,
+        action: 'message_sent',
+        timestamp: now
+      }));
+    } catch (error) {
+      console.warn('Failed to notify other tabs about message activity:', error);
+    }
 
     try {
       socketRef.current.send(JSON.stringify({ content }));

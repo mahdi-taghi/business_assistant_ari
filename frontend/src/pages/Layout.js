@@ -18,6 +18,39 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
+// Helper function to check admin status
+const checkAdminStatus = (user) => {
+  if (!user) return false;
+  
+  // Check various possible admin fields
+  const adminFields = [
+    user.roles?.is_superuser,
+    user.roles?.is_admin,
+    user.roles?.is_staff,
+    user.is_superuser,
+    user.is_admin,
+    user.is_staff,
+    user.roles?.admin,
+    user.roles?.superuser,
+    user.roles?.staff,
+    user.admin,
+    user.superuser,
+    user.staff,
+    // Additional possible fields
+    user.role === 'admin',
+    user.role === 'superuser',
+    user.role === 'staff',
+    user.user_type === 'admin',
+    user.user_type === 'superuser',
+    user.user_type === 'staff',
+    user.permissions?.admin,
+    user.permissions?.superuser,
+    user.permissions?.staff
+  ];
+  
+  return adminFields.some(field => field === true);
+};
+
 const getNavigationItems = (user) => {
   const baseItems = [
     { title: "چت", url: createPageUrl("Chat"), icon: MessageSquare },
@@ -26,7 +59,7 @@ const getNavigationItems = (user) => {
   ];
   
   // Add admin panel for admin users
-  if (user && (user.roles?.is_admin || user.roles?.is_superuser || user.is_superuser)) {
+  if (checkAdminStatus(user)) {
     baseItems.push({ title: "پنل مدیریت", url: createPageUrl("Admin"), icon: Shield });
   }
   

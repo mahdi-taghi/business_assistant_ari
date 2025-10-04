@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MessageSquare, Calendar, X, Filter, Sparkles } from "lucide-react";
+import { Search, MessageSquare, Calendar, X, Filter, Sparkles, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import { createPageUrl } from "@/utils";
@@ -15,6 +15,7 @@ import {
 
 import SessionCard from "../components/history/SessionCard";
 import { useChatApi } from "@/integrations/chatApi";
+import { useAuth } from "@/context/AuthContext";
 
 export default function History() {
   const router = useRouter();
@@ -24,22 +25,78 @@ export default function History() {
   const [sortBy, setSortBy] = useState("recent");
   const [isLoading, setIsLoading] = useState(true);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState(null);
   const { listActiveChats } = useChatApi();
+  const { isAuthenticated, getAccessToken } = useAuth();
+  const refreshIntervalRef = useRef(null);
+  const lastRefreshRef = useRef(Date.now());
 
-  const loadSessions = useCallback(async () => {
-    setIsLoading(true);
+  const loadSessions = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
     try {
       const data = await listActiveChats();
       setSessions(Array.isArray(data) ? data : []);
+      lastRefreshRef.current = Date.now();
+      setLastRefreshTime(new Date());
     } catch (error) {
       console.error("Error loading sessions:", error);
       setSessions([]);
     }
-    setIsLoading(false);
+    if (showLoading) {
+      setIsLoading(false);
+    } else {
+      setIsRefreshing(false);
+    }
   }, [listActiveChats]);
 
+  const handleManualRefresh = useCallback(() => {
+    loadSessions(false);
+  }, [loadSessions]);
+
+  // Auto-refresh sessions every 5 seconds when authenticated
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    // Initial load
     loadSessions();
+
+    // Set up auto-refresh
+    refreshIntervalRef.current = setInterval(() => {
+      loadSessions(false); // Don't show loading spinner for auto-refresh
+    }, 5000);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [isAuthenticated, loadSessions]);
+
+  // Listen for storage events to detect new chats and message activity from other tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'newChatCreated' && e.newValue) {
+        // Refresh sessions when a new chat is created in another tab
+        loadSessions(false);
+        // Clear the storage event
+        localStorage.removeItem('newChatCreated');
+      } else if (e.key === 'chatActivity' && e.newValue) {
+        // Refresh sessions when there's chat activity in another tab
+        loadSessions(false);
+        // Clear the storage event
+        localStorage.removeItem('chatActivity');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [loadSessions]);
 
   const handleSessionClick = (session) => {
@@ -71,11 +128,31 @@ export default function History() {
       <div className="w-full flex flex-col">
         {/* Header */}
         <div className="p-4 md:p-6 border-b border-slate-700/50 bg-gradient-to-r from-slate-900/95 to-slate-800/95 backdrop-blur-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-white">تاریخچه چت</h1>
             </div>
-            <h1 className="text-xl font-bold text-white">تاریخچه چت</h1>
+            
+            <div className="flex items-center gap-3">
+              {lastRefreshTime && (
+                <span className="text-xs text-slate-400">
+                  آخرین بروزرسانی: {lastRefreshTime.toLocaleTimeString('fa-IR')}
+                </span>
+              )}
+              <Button
+                onClick={handleManualRefresh}
+                variant="outline"
+                size="sm"
+                disabled={isRefreshing}
+                className="border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'در حال بروزرسانی...' : 'بروزرسانی'}
+              </Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

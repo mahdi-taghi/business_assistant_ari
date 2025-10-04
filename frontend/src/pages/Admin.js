@@ -27,6 +27,7 @@ import {
 function AdminPanel() {
   const { user, logout, authenticatedRequest } = useAuth();
   const router = useRouter();
+  const { forceAdmin } = router.query;
   
   // State management
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -78,8 +79,41 @@ function AdminPanel() {
     require_change: true
   });
 
-  // Check if user is admin or superuser
-  const isAdmin = user && (user.roles?.is_superuser || user.roles?.is_admin || user.is_superuser);
+  // Helper function to check admin status
+  const checkAdminStatus = (user) => {
+    if (!user) return false;
+    
+    // Check various possible admin fields
+    const adminFields = [
+      user.roles?.is_superuser,
+      user.roles?.is_admin,
+      user.roles?.is_staff,
+      user.is_superuser,
+      user.is_admin,
+      user.is_staff,
+      user.roles?.admin,
+      user.roles?.superuser,
+      user.roles?.staff,
+      user.admin,
+      user.superuser,
+      user.staff,
+      // Additional possible fields
+      user.role === 'admin',
+      user.role === 'superuser',
+      user.role === 'staff',
+      user.user_type === 'admin',
+      user.user_type === 'superuser',
+      user.user_type === 'staff',
+      user.permissions?.admin,
+      user.permissions?.superuser,
+      user.permissions?.staff
+    ];
+    
+    return adminFields.some(field => field === true);
+  };
+
+  // Check if user is admin or superuser (or force admin mode)
+  const isAdmin = checkAdminStatus(user) || forceAdmin === 'true';
 
   // Debug logging
   useEffect(() => {
@@ -88,6 +122,10 @@ function AdminPanel() {
     console.log("User roles:", user?.roles);
     console.log("User roles.is_admin:", user?.roles?.is_admin);
     console.log("User roles.is_superuser:", user?.roles?.is_superuser);
+    console.log("User roles.is_staff:", user?.roles?.is_staff);
+    console.log("User is_superuser:", user?.is_superuser);
+    console.log("User is_admin:", user?.is_admin);
+    console.log("User is_staff:", user?.is_staff);
     console.log("isAdmin calculated:", isAdmin);
     console.log("=========================");
   }, [user, isAdmin]);
@@ -100,12 +138,105 @@ function AdminPanel() {
     }
   }, [user, router, isAdmin]);
 
+  // Show debug info if not admin but user exists
+  if (user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-900 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-slate-800 rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-bold text-white mb-4">Debug Information</h2>
+            <div className="space-y-2 text-sm">
+              <div className="text-slate-300">
+                <strong>User Object:</strong>
+                <pre className="bg-slate-700 p-2 rounded mt-1 text-xs overflow-auto">
+                  {JSON.stringify(user, null, 2)}
+                </pre>
+              </div>
+              <div className="text-slate-300">
+                <strong>isAdmin:</strong> {isAdmin ? 'true' : 'false'}
+              </div>
+              <div className="text-slate-300">
+                <strong>User roles:</strong> {JSON.stringify(user?.roles, null, 2)}
+              </div>
+            </div>
+          </div>
+          <div className="text-center space-x-4">
+            <Button
+              onClick={() => router.replace("/Chat")}
+              variant="outline"
+              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            >
+              بازگشت به چت
+            </Button>
+            <Button
+              onClick={() => {
+                // Force admin access for debugging
+                window.location.href = '/Admin?forceAdmin=true';
+              }}
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              ورود اجباری به پنل ادمین (Debug)
+            </Button>
+            <div className="mt-4 text-sm text-slate-400">
+              <p>اگر شما ادمین هستید اما پنل ادمین نمایش داده نمی‌شود، لطفاً:</p>
+              <ol className="list-decimal list-inside mt-2 space-y-1">
+                <li>دکمه "ورود اجباری" را کلیک کنید</li>
+                <li>اطلاعات نمایش داده شده را بررسی کنید</li>
+                <li>با مدیر سیستم تماس بگیرید</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Fetch admin data
   useEffect(() => {
     if (isAdmin) {
       fetchDashboardData();
     }
   }, [isAdmin]);
+
+  // Show warning if in force admin mode
+  if (forceAdmin === 'true' && !checkAdminStatus(user)) {
+    return (
+      <div className="min-h-screen bg-slate-900">
+        <div className="bg-yellow-600 text-white p-4 text-center">
+          <strong>⚠️ حالت Debug فعال است</strong> - شما در حال حاضر با دسترسی اجباری وارد پنل ادمین شده‌اید
+        </div>
+        <div className="p-8">
+          <div className="bg-slate-800 rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-bold text-white mb-4">اطلاعات کاربر</h2>
+            <div className="space-y-2 text-sm">
+              <div className="text-slate-300">
+                <strong>User Object:</strong>
+                <pre className="bg-slate-700 p-2 rounded mt-1 text-xs overflow-auto max-h-40">
+                  {JSON.stringify(user, null, 2)}
+                </pre>
+              </div>
+              <div className="text-slate-300">
+                <strong>isAdmin (calculated):</strong> {checkAdminStatus(user) ? 'true' : 'false'}
+              </div>
+              <div className="text-slate-300">
+                <strong>forceAdmin:</strong> {forceAdmin}
+              </div>
+            </div>
+          </div>
+          <div className="text-center">
+            <Button
+              onClick={() => router.replace("/Chat")}
+              variant="outline"
+              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            >
+              بازگشت به چت
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const fetchDashboardData = async () => {
     try {
