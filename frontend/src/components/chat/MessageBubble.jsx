@@ -37,20 +37,20 @@ const MessageBubble = memo(function MessageBubble({ message, isLatest }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`flex gap-3 mb-6 ${isUser ? "justify-end" : "justify-start"}`}
+      className={`flex gap-3 mb-6 ${isUser ? "justify-start" : "justify-end"}`}
     >
-      {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-          <Bot className="w-4 h-4 text-white" />
+      {isUser && (
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 shadow-lg">
+          <User className="w-4 h-4 text-white" />
         </div>
       )}
       
-      <div className={`max-w-[80%] ${isUser ? "flex flex-col items-end" : ""}`}>
+      <div className={`max-w-[80%] ${!isUser ? "flex flex-col items-end" : ""}`}>
         <div
           className={`
             relative px-4 py-3 rounded-2xl shadow-lg backdrop-blur-sm
             ${isUser 
-              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white ml-12" 
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white" 
               : "bg-slate-800/90 text-slate-100 border border-slate-700/50"
             }
           `}
@@ -65,16 +65,10 @@ const MessageBubble = memo(function MessageBubble({ message, isLatest }) {
             {content}
           </p>
           
-          {/* Message tail */}
-          <div
-            className={`
-              absolute top-3 w-2 h-2 transform rotate-45
-              ${isUser 
-                ? "-right-1 bg-blue-500" 
-                : "-left-1 bg-slate-800 border-l border-t border-slate-700/50"
-              }
-            `}
-          />
+          {/* Message tail - only for bot messages */}
+          {!isUser && (
+            <div className="absolute top-3 -left-1 w-2 h-2 transform rotate-45 bg-slate-800 border-l border-t border-slate-700/50" />
+          )}
         </div>
         
         {timestamp && (
@@ -82,9 +76,9 @@ const MessageBubble = memo(function MessageBubble({ message, isLatest }) {
         )}
       </div>
       
-      {isUser && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-slate-600 to-slate-700 flex items-center justify-center flex-shrink-0 shadow-lg">
-          <User className="w-4 h-4 text-white" />
+      {!isUser && (
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+          <Bot className="w-4 h-4 text-white" />
         </div>
       )}
     </motion.div>
