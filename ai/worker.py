@@ -7,7 +7,7 @@ import json, asyncio, time
 import redis.asyncio as redis
 
 # از test.py خودت، talk_to_db رو می‌آریم
-from .talk_to_db import talk_to_db
+from talk_to_db import talk_to_db
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis_chat:6379/0")
 CHAT_STREAM_KEY = os.getenv("CHAT_STREAM_KEY", "chat_stream") 

@@ -501,14 +501,3 @@ if __name__ == "__main__":
     # هلت‌چک Redis
     if not redis_health_check():
         print("⚠️ اتصال به Redis مشکل دارد.")
-
-    print(
-        talk_to_db(
-            question="تعداد کشور‌هایی که با ایران مبادله داشتند؟",
-            user_id="1",
-            user_role="admin",
-            chat_id="123",
-            is_first_message=True,
-            verbose=True
-        )
-    )
