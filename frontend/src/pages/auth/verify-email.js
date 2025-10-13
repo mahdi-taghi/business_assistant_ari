@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Mail, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
@@ -9,6 +10,7 @@ function VerifyEmailPage() {
   const router = useRouter();
   const { token, email } = router.query;
   const { resendVerification } = useAuth();
+  const { theme, isDark } = useTheme();
   const [status, setStatus] = useState("loading"); // loading, success, error, expired
   const [message, setMessage] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -97,34 +99,48 @@ function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4 py-10">
+    <div className={`min-h-screen flex items-center justify-center px-4 py-10 ${
+      isDark 
+        ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
+        : 'bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100'
+    }`}>
       <div className="w-full max-w-md">
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl shadow-2xl backdrop-blur-xl p-8 sm:p-10">
+        <div className={`rounded-3xl shadow-2xl backdrop-blur-xl p-8 sm:p-10 ${
+          isDark 
+            ? 'bg-slate-900/80 border border-slate-800' 
+            : 'bg-white/80 border border-slate-200'
+        }`}>
           <div className="text-center space-y-6">
             <div className="flex justify-center">
               {getStatusIcon()}
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold text-white">
+              <h2 className={`text-2xl font-semibold text-right ${
+                isDark ? 'text-white' : 'text-slate-800'
+              }`}>
                 {status === "loading" && "در حال تأیید ایمیل..."}
                 {status === "success" && "ایمیل تأیید شد!"}
                 {(status === "error" || status === "expired") && "خطا در تأیید ایمیل"}
               </h2>
               
               {email && (
-                <p className="text-slate-300 text-sm">
+                <p className={`text-sm text-justify text-right ${
+                  isDark ? 'text-slate-300' : 'text-slate-600'
+                }`}>
                   ایمیل: {email}
                 </p>
               )}
               
-              <p className={`text-sm ${getStatusColor()}`}>
+              <p className={`text-sm text-justify text-right ${getStatusColor()}`}>
                 {message}
               </p>
             </div>
 
             {status === "loading" && (
-              <div className="text-slate-400 text-sm">
+              <div className={`text-sm text-justify text-right ${
+                isDark ? 'text-slate-400' : 'text-slate-600'
+              }`}>
                 لطفاً صبر کنید...
               </div>
             )}
@@ -135,7 +151,7 @@ function VerifyEmailPage() {
                   onClick={() => router.push("/auth/login")}
                   className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-semibold py-3 rounded-xl transition-all duration-200"
                 >
-                  ورود به حساب کاربری
+                  <span className="text-right">ورود به حساب کاربری</span>
                 </Button>
               </div>
             )}
@@ -147,15 +163,17 @@ function VerifyEmailPage() {
                   disabled={isResending}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-semibold py-3 rounded-xl transition-all duration-200 disabled:opacity-50"
                 >
-                  {isResending ? "در حال ارسال..." : "ارسال مجدد ایمیل تأیید"}
+                  <span className="text-right">{isResending ? "در حال ارسال..." : "ارسال مجدد ایمیل تأیید"}</span>
                 </Button>
                 
                 <div className="text-center">
                   <Link 
                     href="/auth/login" 
-                    className="text-blue-400 hover:text-blue-300 font-medium text-sm"
+                    className={`font-medium text-sm ${
+                      isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+                    }`}
                   >
-                    بازگشت به صفحه ورود
+                    <span className="text-right">بازگشت به صفحه ورود</span>
                   </Link>
                 </div>
               </div>
@@ -165,16 +183,20 @@ function VerifyEmailPage() {
               <div className="text-center">
                 <Link 
                   href="/auth/register" 
-                  className="text-blue-400 hover:text-blue-300 font-medium text-sm"
+                  className={`font-medium text-sm ${
+                    isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+                  }`}
                 >
-                  بازگشت به صفحه ثبت نام
+                  <span className="text-right">بازگشت به صفحه ثبت نام</span>
                 </Link>
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-6 text-center text-sm text-slate-400">
+        <div className={`mt-6 text-center text-sm text-justify text-right ${
+          isDark ? 'text-slate-400' : 'text-slate-600'
+        }`}>
           <p>اگر ایمیل تأیید را دریافت نکرده‌اید، لطفاً پوشه اسپم خود را نیز بررسی کنید.</p>
         </div>
       </div>

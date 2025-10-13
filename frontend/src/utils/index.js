@@ -89,6 +89,15 @@ export function formatTime(iso) {
 
 import { detectTextDirection } from "./textDirection";
 
+/**
+ * Utility function to merge class names
+ * @param {...(string|undefined|null|boolean)} classes - Class names to merge
+ * @returns {string} Merged class names
+ */
+export function cn(...classes) {
+  return classes.filter(Boolean).join(' ');
+}
+
 export { detectTextDirection };
 
 export default { 
@@ -96,5 +105,6 @@ export default {
   detectTextDirection, 
   isAdminUser, 
   parseMaybeJson, 
-  formatTime 
+  formatTime,
+  cn
 };

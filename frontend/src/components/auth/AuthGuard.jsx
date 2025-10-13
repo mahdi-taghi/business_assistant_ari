@@ -1,6 +1,7 @@
 import React, { useEffect, memo } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 /**
  * AuthGuard component that protects routes requiring authentication
@@ -12,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 const AuthGuard = memo(function AuthGuard({ children, requiresAuth = true }) {
   const router = useRouter();
   const { isAuthenticated, initializing } = useAuth();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     if (!requiresAuth) return;
@@ -23,10 +25,16 @@ const AuthGuard = memo(function AuthGuard({ children, requiresAuth = true }) {
 
   if (requiresAuth && (initializing || !isAuthenticated)) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-900">
-        <div className="flex flex-col items-center text-slate-300">
+      <div className={`flex items-center justify-center min-h-screen ${
+        isDark ? 'bg-slate-900' : 'bg-slate-50'
+      }`}>
+        <div className={`flex flex-col items-center ${
+          isDark ? 'text-slate-300' : 'text-slate-600'
+        }`}>
           <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-sm text-slate-400">Preparing your workspace...</p>
+          <p className={`text-sm ${
+            isDark ? 'text-slate-400' : 'text-slate-500'
+          }`}>Preparing your workspace...</p>
         </div>
       </div>
     );
