@@ -11,6 +11,7 @@ import { parseMaybeJson, formatTime } from "@/utils";
 import MessageBubble from "../components/chat/MessageBubble";
 import ChatInput from "../components/chat/ChatInput";
 import TypingIndicator from "../components/chat/TypingIndicator";
+import MobileNavMenu from "../components/ui/MobileNavMenu";
 
 /**
  * Builds WebSocket URL for chat connection
@@ -118,6 +119,7 @@ const Chat = memo(function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
@@ -361,6 +363,21 @@ const Chat = memo(function Chat() {
   ]);
 
   useEffect(() => {
+    // Handle mobile keyboard visibility
+    const handleResize = () => {
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      }
+    };
+
+    // Initial call
+    handleResize();
+
+    // Listen for resize events
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
     return () => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
@@ -369,6 +386,8 @@ const Chat = memo(function Chat() {
         socketRef.current.close(1000, "Component unmounted");
         socketRef.current = null;
       }
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
     };
   }, []);
 
@@ -423,30 +442,25 @@ const Chat = memo(function Chat() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className={`flex flex-col h-full transition-colors duration-300 ${
+    <div className={`flex flex-col h-screen md:h-full transition-colors duration-300 chat-container ${
       isDark ? 'bg-slate-900' : 'bg-slate-50'
     }`}>
-      {/* Fixed Header */}
-      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl border-b px-4 md:px-6 py-4 md:ml-72 transition-all duration-500 ${
+      {/* Mobile Header - Only visible on mobile */}
+      <div className={`md:hidden fixed top-0 left-0 right-0 z-30 backdrop-blur-xl border-b px-4 py-3 transition-all duration-500 ${
         isDark 
           ? 'bg-slate-900/95 border-slate-700/50' 
           : 'bg-white/95 border-slate-200/50'
       }`}>
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className={`p-2 rounded-lg transition-colors duration-200 md:hidden ${
-              isDark 
-                ? 'hover:bg-slate-800 text-white' 
-                : 'hover:bg-slate-100 text-slate-800'
-            }`} />
-            <div className={`w-2 h-2 rounded-full ${socketConnected ? "bg-green-400" : "bg-red-500"} animate-pulse hidden md:block`} />
+            <div className={`w-2 h-2 rounded-full ${socketConnected ? "bg-green-400" : "bg-red-500"} animate-pulse`} />
             <div>
-              <h1 className={`text-base md:text-lg font-semibold truncate max-w-[150px] sm:max-w-xs md:max-w-md transition-colors duration-300 ${
+              <h1 className={`text-base font-semibold truncate max-w-[150px] transition-colors duration-300 ${
                 isDark ? 'text-white' : 'text-slate-800'
               }`}>
                 {currentSession?.title || "دستیار هوشمند آری"}
               </h1>
-              <p className={`text-xs md:text-sm transition-colors duration-300 ${
+              <p className={`text-xs transition-colors duration-300 ${
                 isDark ? 'text-slate-400' : 'text-slate-500'
               }`}>
                 {socketConnected ? "" : "در حال تلاش برای اتصال..."}
@@ -454,6 +468,38 @@ const Chat = memo(function Chat() {
             </div>
           </div>
 
+          {/* Mobile Navigation Menu */}
+          <MobileNavMenu 
+            onCreateNewChat={createNewSession} 
+            onMenuStateChange={setIsMobileMenuOpen}
+          />
+        </div>
+      </div>
+
+      {/* Desktop Header - Only visible on desktop */}
+      <div className={`hidden md:block fixed top-0 left-0 right-0 z-30 backdrop-blur-xl border-b px-6 py-4 ml-72 transition-all duration-500 ${
+        isDark 
+          ? 'bg-slate-900/95 border-slate-700/50' 
+          : 'bg-white/95 border-slate-200/50'
+      }`}>
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className={`w-2 h-2 rounded-full ${socketConnected ? "bg-green-400" : "bg-red-500"} animate-pulse`} />
+            <div>
+              <h1 className={`text-lg font-semibold truncate max-w-md transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-slate-800'
+              }`}>
+                {currentSession?.title || "دستیار هوشمند آری"}
+              </h1>
+              <p className={`text-sm transition-colors duration-300 ${
+                isDark ? 'text-slate-400' : 'text-slate-500'
+              }`}>
+                {socketConnected ? "" : "در حال تلاش برای اتصال..."}
+              </p>
+            </div>
+          </div>
+
+          {/* Desktop New Chat Button */}
           <Button
             onClick={createNewSession}
             variant="outline"
@@ -465,15 +511,15 @@ const Chat = memo(function Chat() {
             }`}
             disabled={isSending}
           >
-            <Plus className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:inline">چت جدید</span>
+            <Plus className="w-4 h-4 mr-2" />
+            <span>چت جدید</span>
           </Button>
         </div>
       </div>
 
       {/* Scrollable Messages Area */}
-      <div className="flex-1 overflow-y-auto pt-16 pb-20 custom-scrollbar">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="flex-1 overflow-y-auto pt-16 md:pt-16 pb-20 md:pb-20 custom-scrollbar messages-container">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-8">
           {isLoading ? (
             <motion.div 
               className="text-center py-16"
@@ -576,12 +622,20 @@ const Chat = memo(function Chat() {
       </div>
 
       {/* Fixed Chat Input */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:ml-72">
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          isLoading={isSending || !socketConnected}
-          placeholder="سوال خود را بپرسید..."
-        />
+      <div className={`fixed bottom-0 left-0 right-0 z-30 md:ml-72 chat-input-container transition-transform duration-300 ${
+        isMobileMenuOpen ? 'translate-y-full' : 'translate-y-0'
+      }`}>
+        <div className={`px-4 md:px-6 py-4 backdrop-blur-xl border-t ${
+          isDark 
+            ? 'bg-slate-900/95 border-slate-700/50' 
+            : 'bg-white/95 border-slate-200/50'
+        }`}>
+          <ChatInput
+            onSendMessage={handleSendMessage}
+            isLoading={isSending || !socketConnected}
+            placeholder="سوال خود را بپرسید..."
+          />
+        </div>
       </div>
     </div>
   );

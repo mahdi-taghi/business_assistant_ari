@@ -150,7 +150,11 @@ const ChatInput = memo(function ChatInput({ onSendMessage, isLoading, placeholde
                     boxSizing: 'border-box',
                     lineHeight: '1.5',
                     fontSize: '16px',
-                    unicodeBidi: 'plaintext'
+                    unicodeBidi: 'plaintext',
+                    // Prevent zoom on mobile
+                    WebkitTextSizeAdjust: '100%',
+                    MsTextSizeAdjust: '100%',
+                    textSizeAdjust: '100%'
                   }}
                   rows={1}
                 />

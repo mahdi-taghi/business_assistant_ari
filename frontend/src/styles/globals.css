@@ -141,6 +141,73 @@ body {
   color: var(--foreground);
   font-family: 'Vazirmatn', Arial, Helvetica, sans-serif;
   font-feature-settings: "rlig" 1, "calt" 1;
+  /* Prevent zoom on mobile devices */
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Prevent zoom on input focus for mobile devices */
+input, textarea, select {
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Mobile-specific styles to prevent zoom */
+@media screen and (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+  
+  body {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
+    overflow-x: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Ensure inputs don't trigger zoom */
+  input, textarea, select {
+    font-size: 16px !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  
+  /* Prevent double-tap zoom */
+  * {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection in inputs */
+  input, textarea {
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  /* Prevent zoom on focus */
+  input:focus, textarea:focus, select:focus {
+    font-size: 16px !important;
+    transform: scale(1) !important;
+    -webkit-transform: scale(1) !important;
+  }
 }
 
 /* Custom scrollbar for chat interface */
@@ -324,15 +391,70 @@ textarea {
   overflow-y: hidden !important;
   transition: height 0.1s ease !important;
   box-sizing: border-box !important;
+  /* Prevent zoom on mobile */
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100% !important;
+  -ms-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 textarea:focus {
   outline: none !important;
   box-shadow: none !important;
+  /* Ensure no zoom on focus */
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100% !important;
+  -ms-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 textarea.scrollable {
   overflow-y: auto !important;
+}
+
+/* Mobile-specific input styles */
+@media screen and (max-width: 768px) {
+  textarea, input[type="text"], input[type="email"], input[type="password"] {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+    -ms-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  /* Prevent zoom on focus */
+  textarea:focus, input:focus {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+    -ms-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+  }
+  
+  /* Chat container mobile optimizations */
+  .chat-container {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    overflow: hidden;
+  }
+  
+  /* Ensure chat input stays visible when keyboard appears */
+  .chat-input-container {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    background: inherit !important;
+  }
+  
+  /* Adjust messages area when keyboard is visible */
+  .messages-container {
+    height: calc(100vh - 140px) !important;
+    height: calc(calc(var(--vh, 1vh) * 100) - 140px) !important;
+    overflow-y: auto !important;
+    padding-bottom: 80px !important;
+  }
 }
 
 /* Word breaking utilities */

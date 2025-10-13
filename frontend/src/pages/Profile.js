@@ -32,6 +32,7 @@ import { useTheme } from "@/context/ThemeContext";
 
 import StatsCard from "../components/profile/StatsCard";
 import { useChatApi } from "@/integrations/chatApi";
+import MobileNavMenu from "../components/ui/MobileNavMenu";
 
 function formatDate(value, options) {
   try {
@@ -233,11 +234,6 @@ export default function Profile() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-4 mb-8"
         >
-          <SidebarTrigger className={`p-2 rounded-lg transition-colors duration-200 md:hidden ${
-            isDark 
-              ? 'hover:bg-slate-800 text-white' 
-              : 'hover:bg-slate-100 text-slate-800'
-          }`} />
           <div className="flex-1 text-center md:text-left">
             <h1 className={`text-2xl md:text-3xl font-bold transition-colors duration-300 ${
               isDark ? 'text-white' : 'text-slate-800'
@@ -246,6 +242,9 @@ export default function Profile() {
               isDark ? 'text-slate-400' : 'text-slate-500'
             }`}>حساب کاربری و تنظیمات خود را مدیریت کنید</p>
           </div>
+          
+          {/* Mobile Navigation Menu */}
+          <MobileNavMenu onCreateNewChat={() => router.push("/Chat")} />
         </motion.div>
 
         {/* Success Message */}

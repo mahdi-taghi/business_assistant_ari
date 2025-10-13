@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "next/router";
@@ -25,6 +25,7 @@ import {
   AdminErrorLogs,
   AdminModals
 } from "@/components/admin";
+import MobileNavMenu from "../components/ui/MobileNavMenu";
 
 const AdminPanel = memo(function AdminPanel() {
   const { user, logout, authenticatedRequest } = useAuth();
@@ -108,6 +109,69 @@ const AdminPanel = memo(function AdminPanel() {
     }
   }, [user, router, isAdmin]);
 
+  // Fetch admin data
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all data in parallel
+      const [usersRes, chatsRes, messagesRes, emailLogsRes, errorLogsRes] = await Promise.all([
+        authenticatedRequest("/adminpanel/users/"),
+        authenticatedRequest("/adminpanel/chats/"),
+        authenticatedRequest("/adminpanel/messages/"),
+        authenticatedRequest("/adminpanel/email-logs/"),
+        authenticatedRequest("/adminpanel/error-logs/")
+      ]);
+
+      if (usersRes.ok) {
+        setUsers(usersRes.data.results || usersRes.data);
+      }
+
+      if (chatsRes.ok) {
+        setChats(chatsRes.data.results || chatsRes.data);
+      }
+
+      if (messagesRes.ok) {
+        setMessages(messagesRes.data.results || messagesRes.data);
+      }
+
+      if (emailLogsRes.ok) {
+        setEmailLogs(emailLogsRes.data.results || emailLogsRes.data);
+      }
+
+      if (errorLogsRes.ok) {
+        setErrorLogs(errorLogsRes.data.results || errorLogsRes.data);
+      }
+
+      // Calculate stats
+      const usersData = usersRes.ok ? (usersRes.data.results || usersRes.data) : [];
+      const chatsData = chatsRes.ok ? (chatsRes.data.results || chatsRes.data) : [];
+      const messagesData = messagesRes.ok ? (messagesRes.data.results || messagesRes.data) : [];
+      const emailLogsData = emailLogsRes.ok ? (emailLogsRes.data.results || emailLogsRes.data) : [];
+      const errorLogsData = errorLogsRes.ok ? (errorLogsRes.data.results || errorLogsRes.data) : [];
+
+      setStats({
+        totalUsers: usersData.length,
+        activeUsers: usersData.filter(user => user.is_active).length,
+        totalChats: chatsData.length,
+        totalMessages: messagesData.length,
+        emailLogs: emailLogsData.length,
+        errorLogs: errorLogsData.length
+      });
+
+    } catch (error) {
+      console.error("Failed to fetch admin data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [authenticatedRequest]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchDashboardData();
+    }
+  }, [isAdmin, fetchDashboardData]);
+
   // Show debug info if not admin but user exists
   if (user && !isAdmin) {
     return (
@@ -182,13 +246,6 @@ const AdminPanel = memo(function AdminPanel() {
     );
   }
 
-  // Fetch admin data
-  useEffect(() => {
-    if (isAdmin) {
-      fetchDashboardData();
-    }
-  }, [isAdmin]);
-
   // Show warning if in force admin mode
   if (forceAdmin === 'true' && !isAdminUser(user)) {
     return (
@@ -246,57 +303,6 @@ const AdminPanel = memo(function AdminPanel() {
     );
   }
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch all data in parallel
-      const [usersRes, chatsRes, messagesRes, emailLogsRes, errorLogsRes] = await Promise.all([
-        authenticatedRequest("/adminpanel/users/"),
-        authenticatedRequest("/adminpanel/chats/"),
-        authenticatedRequest("/adminpanel/messages/"),
-        authenticatedRequest("/adminpanel/email-logs/"),
-        authenticatedRequest("/adminpanel/error-logs/")
-      ]);
-
-      if (usersRes.ok) {
-        setUsers(usersRes.data.results || usersRes.data);
-      }
-      if (chatsRes.ok) {
-        setChats(chatsRes.data.results || chatsRes.data);
-      }
-      if (messagesRes.ok) {
-        setMessages(messagesRes.data.results || messagesRes.data);
-      }
-      if (emailLogsRes.ok) {
-        setEmailLogs(emailLogsRes.data.results || emailLogsRes.data);
-      }
-      if (errorLogsRes.ok) {
-        setErrorLogs(errorLogsRes.data.results || errorLogsRes.data);
-      }
-
-      // Calculate stats
-      const usersData = usersRes.ok ? (usersRes.data.results || usersRes.data) : [];
-      const chatsData = chatsRes.ok ? (chatsRes.data.results || chatsRes.data) : [];
-      const messagesData = messagesRes.ok ? (messagesRes.data.results || messagesRes.data) : [];
-      const emailLogsData = emailLogsRes.ok ? (emailLogsRes.data.results || emailLogsRes.data) : [];
-      const errorLogsData = errorLogsRes.ok ? (errorLogsRes.data.results || errorLogsRes.data) : [];
-      
-      setStats({
-        totalUsers: usersData.length,
-        activeUsers: usersData.filter(u => u.is_active).length,
-        totalChats: chatsData.length,
-        totalMessages: messagesData.length,
-        emailLogs: emailLogsData.length,
-        errorLogs: errorLogsData.length
-      });
-
-    } catch (error) {
-      console.error("Failed to fetch admin data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // User management handlers
   const handleUserToggle = async (userId, currentStatus) => {
@@ -525,7 +531,7 @@ const AdminPanel = memo(function AdminPanel() {
               <Button
                 onClick={() => router.push("/Chat")}
                 variant="outline"
-                className={`transition-colors duration-300 ${
+                className={`hidden md:flex transition-colors duration-300 ${
                   isDark 
                     ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
                     : 'border-slate-300 text-slate-600 hover:bg-slate-100'
@@ -537,7 +543,7 @@ const AdminPanel = memo(function AdminPanel() {
               <Button
                 onClick={handleLogout}
                 variant="outline"
-                className={`transition-colors duration-300 ${
+                className={`hidden md:flex transition-colors duration-300 ${
                   isDark 
                     ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
                     : 'border-slate-300 text-slate-600 hover:bg-slate-100'
@@ -546,6 +552,9 @@ const AdminPanel = memo(function AdminPanel() {
                 <LogOut className="w-4 h-4 mr-2" />
                 خروج
               </Button>
+              
+              {/* Mobile Navigation Menu */}
+              <MobileNavMenu onCreateNewChat={() => router.push("/Chat")} />
             </div>
           </div>
         </div>

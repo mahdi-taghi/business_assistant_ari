@@ -171,7 +171,8 @@ const Layout = memo(function Layout({ children, currentPageName }) {
           <main className={`flex-1 flex flex-col overflow-hidden md:ml-72 transition-colors duration-300 ${
             isDark ? 'bg-slate-900' : 'bg-slate-50'
           }`}>
-            <div className={`sticky top-0 z-10 border-b backdrop-blur transition-colors duration-300 ${
+            {/* Desktop Header - Hidden on mobile */}
+            <div className={`hidden md:block sticky top-0 z-10 border-b backdrop-blur transition-colors duration-300 ${
               isDark 
                 ? 'border-slate-800/80 bg-slate-900/80 supports-[backdrop-filter]:bg-slate-900/60' 
                 : 'border-slate-200/80 bg-white/80 supports-[backdrop-filter]:bg-white/60'

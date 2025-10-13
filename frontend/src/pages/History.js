@@ -17,6 +17,7 @@ import SessionCard from "../components/history/SessionCard";
 import { useChatApi } from "@/integrations/chatApi";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import MobileNavMenu from "../components/ui/MobileNavMenu";
 
 export default function History() {
   const router = useRouter();
@@ -159,7 +160,7 @@ export default function History() {
                 variant="outline"
                 size="sm"
                 disabled={isRefreshing}
-                className={`transition-colors duration-300 ${
+                className={`hidden md:flex transition-colors duration-300 ${
                   isDark 
                     ? 'border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent' 
                     : 'border-slate-300 hover:border-blue-500 text-slate-600 hover:text-blue-600 bg-transparent'
@@ -168,6 +169,9 @@ export default function History() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                 {isRefreshing ? 'در حال بروزرسانی...' : 'بروزرسانی'}
               </Button>
+              
+              {/* Mobile Navigation Menu */}
+              <MobileNavMenu onCreateNewChat={() => navigate(createPageUrl("Chat"))} />
             </div>
           </div>
           
