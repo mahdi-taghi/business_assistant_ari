@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Send, Loader2, Smile, Paperclip, Mic } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { detectTextDirection } from "@/utils";
+import { useTheme } from "@/context/ThemeContext";
 
 const ChatInput = memo(function ChatInput({ onSendMessage, isLoading, placeholder = "پیام خود را بنویسید..." }) {
   const [message, setMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [textDirection, setTextDirection] = useState("rtl");
   const textareaRef = useRef(null);
+  const { isDark } = useTheme();
 
   // Simple auto-resize function
   const autoResize = () => {
@@ -79,15 +81,25 @@ const ChatInput = memo(function ChatInput({ onSendMessage, isLoading, placeholde
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="bg-slate-900/95 backdrop-blur-md p-4 md:p-6"
+      className={`backdrop-blur-md p-4 md:p-6 transition-colors duration-300 ${
+        isDark ? 'bg-slate-900/95' : 'bg-white/95'
+      }`}
     >
       <div className="max-w-5xl mx-auto">
         <form onSubmit={handleSubmit} className="w-full">
           <motion.div 
             className={`relative rounded-2xl transition-all duration-300 ${
               isFocused 
-                ? 'bg-slate-800/80 border-2 border-blue-500/50 shadow-lg shadow-blue-500/10' 
-                : 'bg-slate-800/60 border border-slate-700/50 hover:border-slate-600/50'
+                ? 'border-2 border-blue-500/50 shadow-lg shadow-blue-500/10' 
+                : 'border hover:border-blue-300/50'
+            } ${
+              isDark 
+                ? isFocused 
+                  ? 'bg-slate-800/80 border-slate-700/50' 
+                  : 'bg-slate-800/60 border-slate-700/50'
+                : isFocused 
+                  ? 'bg-slate-50/80 border-slate-300/50' 
+                  : 'bg-white/60 border-slate-300/50'
             }`}
             animate={{
               scale: isFocused ? 1.02 : 1,

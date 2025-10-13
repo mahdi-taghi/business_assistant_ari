@@ -1,5 +1,6 @@
 import React, { useState, useEffect, memo } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { isAdminUser } from "@/utils";
@@ -27,6 +28,7 @@ import {
 
 const AdminPanel = memo(function AdminPanel() {
   const { user, logout, authenticatedRequest } = useAuth();
+  const { isDark } = useTheme();
   const router = useRouter();
   const { forceAdmin } = router.query;
   
@@ -109,21 +111,35 @@ const AdminPanel = memo(function AdminPanel() {
   // Show debug info if not admin but user exists
   if (user && !isAdmin) {
     return (
-      <div className="min-h-screen bg-slate-900 p-8">
+      <div className={`min-h-screen p-8 transition-colors duration-300 ${
+        isDark ? 'bg-slate-900' : 'bg-slate-50'
+      }`}>
         <div className="max-w-4xl mx-auto">
-          <div className="bg-slate-800 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold text-white mb-4">Debug Information</h2>
+          <div className={`rounded-lg p-6 mb-6 transition-colors duration-300 ${
+            isDark ? 'bg-slate-800' : 'bg-white'
+          }`}>
+            <h2 className={`text-xl font-bold mb-4 transition-colors duration-300 ${
+              isDark ? 'text-white' : 'text-slate-800'
+            }`}>Debug Information</h2>
             <div className="space-y-2 text-sm">
-              <div className="text-slate-300">
+              <div className={`transition-colors duration-300 ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}>
                 <strong>User Object:</strong>
-                <pre className="bg-slate-700 p-2 rounded mt-1 text-xs overflow-auto">
+                <pre className={`p-2 rounded mt-1 text-xs overflow-auto transition-colors duration-300 ${
+                  isDark ? 'bg-slate-700' : 'bg-slate-100'
+                }`}>
                   {JSON.stringify(user, null, 2)}
                 </pre>
               </div>
-              <div className="text-slate-300">
+              <div className={`transition-colors duration-300 ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}>
                 <strong>isAdmin:</strong> {isAdmin ? 'true' : 'false'}
               </div>
-              <div className="text-slate-300">
+              <div className={`transition-colors duration-300 ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}>
                 <strong>User roles:</strong> {JSON.stringify(user?.roles, null, 2)}
               </div>
             </div>
@@ -132,7 +148,11 @@ const AdminPanel = memo(function AdminPanel() {
             <Button
               onClick={() => router.replace("/Chat")}
               variant="outline"
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              className={`transition-colors duration-300 ${
+                isDark 
+                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+              }`}
             >
               بازگشت به چت
             </Button>
@@ -146,7 +166,9 @@ const AdminPanel = memo(function AdminPanel() {
             >
               ورود اجباری به پنل ادمین (Debug)
             </Button>
-            <div className="mt-4 text-sm text-slate-400">
+            <div className={`mt-4 text-sm transition-colors duration-300 ${
+              isDark ? 'text-slate-400' : 'text-slate-500'
+            }`}>
               <p>اگر شما ادمین هستید اما پنل ادمین نمایش داده نمی‌شود، لطفاً:</p>
               <ol className="list-decimal list-inside mt-2 space-y-1">
                 <li>دکمه "ورود اجباری" را کلیک کنید</li>
@@ -170,24 +192,38 @@ const AdminPanel = memo(function AdminPanel() {
   // Show warning if in force admin mode
   if (forceAdmin === 'true' && !isAdminUser(user)) {
     return (
-      <div className="min-h-screen bg-slate-900">
+      <div className={`min-h-screen transition-colors duration-300 ${
+        isDark ? 'bg-slate-900' : 'bg-slate-50'
+      }`}>
         <div className="bg-yellow-600 text-white p-4 text-center">
           <strong>⚠️ حالت Debug فعال است</strong> - شما در حال حاضر با دسترسی اجباری وارد پنل ادمین شده‌اید
         </div>
         <div className="p-8">
-          <div className="bg-slate-800 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold text-white mb-4">اطلاعات کاربر</h2>
+          <div className={`rounded-lg p-6 mb-6 transition-colors duration-300 ${
+            isDark ? 'bg-slate-800' : 'bg-white'
+          }`}>
+            <h2 className={`text-xl font-bold mb-4 transition-colors duration-300 ${
+              isDark ? 'text-white' : 'text-slate-800'
+            }`}>اطلاعات کاربر</h2>
             <div className="space-y-2 text-sm">
-              <div className="text-slate-300">
+              <div className={`transition-colors duration-300 ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}>
                 <strong>User Object:</strong>
-                <pre className="bg-slate-700 p-2 rounded mt-1 text-xs overflow-auto max-h-40">
+                <pre className={`p-2 rounded mt-1 text-xs overflow-auto max-h-40 transition-colors duration-300 ${
+                  isDark ? 'bg-slate-700' : 'bg-slate-100'
+                }`}>
                   {JSON.stringify(user, null, 2)}
                 </pre>
               </div>
-              <div className="text-slate-300">
+              <div className={`transition-colors duration-300 ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}>
                 <strong>isAdmin (calculated):</strong> {isAdminUser(user) ? 'true' : 'false'}
               </div>
-              <div className="text-slate-300">
+              <div className={`transition-colors duration-300 ${
+                isDark ? 'text-slate-300' : 'text-slate-600'
+              }`}>
                 <strong>forceAdmin:</strong> {forceAdmin}
               </div>
             </div>
@@ -196,7 +232,11 @@ const AdminPanel = memo(function AdminPanel() {
             <Button
               onClick={() => router.replace("/Chat")}
               variant="outline"
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              className={`transition-colors duration-300 ${
+                isDark 
+                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+              }`}
             >
               بازگشت به چت
             </Button>
@@ -412,19 +452,35 @@ const AdminPanel = memo(function AdminPanel() {
 
   if (loading && activeTab === "dashboard") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-white text-xl">در حال بارگذاری پنل مدیریت...</div>
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${
+        isDark 
+          ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
+          : 'bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200'
+      }`}>
+        <div className={`text-xl transition-colors duration-300 ${
+          isDark ? 'text-white' : 'text-slate-800'
+        }`}>در حال بارگذاری پنل مدیریت...</div>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center transition-colors duration-300 ${
+        isDark 
+          ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
+          : 'bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200'
+      }`}>
         <div className="text-center">
-          <div className="text-white text-xl mb-4">دسترسی رد شد</div>
-          <div className="text-slate-400 mb-4">شما مجوز دسترسی به پنل مدیریت را ندارید.</div>
-          <div className="text-slate-500 text-sm mb-4">
+          <div className={`text-xl mb-4 transition-colors duration-300 ${
+            isDark ? 'text-white' : 'text-slate-800'
+          }`}>دسترسی رد شد</div>
+          <div className={`mb-4 transition-colors duration-300 ${
+            isDark ? 'text-slate-400' : 'text-slate-500'
+          }`}>شما مجوز دسترسی به پنل مدیریت را ندارید.</div>
+          <div className={`text-sm mb-4 transition-colors duration-300 ${
+            isDark ? 'text-slate-500' : 'text-slate-400'
+          }`}>
             Debug info: roles={JSON.stringify(user?.roles)}
           </div>
           <Button
@@ -439,9 +495,17 @@ const AdminPanel = memo(function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDark 
+        ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
+        : 'bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200'
+    }`}>
       {/* Header */}
-      <div className="bg-slate-900/80 border-b border-slate-800 backdrop-blur-xl">
+      <div className={`border-b backdrop-blur-xl transition-colors duration-300 ${
+        isDark 
+          ? 'bg-slate-900/80 border-slate-800' 
+          : 'bg-white/80 border-slate-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-3">
@@ -449,15 +513,23 @@ const AdminPanel = memo(function AdminPanel() {
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">پنل مدیریت</h1>
-                <p className="text-sm text-slate-400">خوش آمدید، {user.full_name}</p>
+                <h1 className={`text-2xl font-bold transition-colors duration-300 ${
+                  isDark ? 'text-white' : 'text-slate-800'
+                }`}>پنل مدیریت</h1>
+                <p className={`text-sm transition-colors duration-300 ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}>خوش آمدید، {user.full_name}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => router.push("/Chat")}
                 variant="outline"
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                className={`transition-colors duration-300 ${
+                  isDark 
+                    ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                    : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+                }`}
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 چت
@@ -465,7 +537,11 @@ const AdminPanel = memo(function AdminPanel() {
               <Button
                 onClick={handleLogout}
                 variant="outline"
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                className={`transition-colors duration-300 ${
+                  isDark 
+                    ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                    : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+                }`}
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 خروج
@@ -476,7 +552,11 @@ const AdminPanel = memo(function AdminPanel() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-slate-900/50 border-b border-slate-800">
+      <div className={`border-b transition-colors duration-300 ${
+        isDark 
+          ? 'bg-slate-900/50 border-slate-800' 
+          : 'bg-white/50 border-slate-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-1 py-2">
             {[
@@ -494,8 +574,12 @@ const AdminPanel = memo(function AdminPanel() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     activeTab === tab.id
-                      ? "bg-slate-800 text-white"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                      ? isDark 
+                        ? "bg-slate-800 text-white" 
+                        : "bg-slate-200 text-slate-800"
+                      : isDark 
+                        ? "text-slate-400 hover:text-white hover:bg-slate-800/50" 
+                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100/50"
                   }`}
                 >
                   <Icon className="w-4 h-4" />

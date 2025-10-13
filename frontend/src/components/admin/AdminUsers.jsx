@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "@/context/ThemeContext";
 import { 
   Users, 
   Search, 
@@ -26,16 +27,26 @@ function AdminUsers({
   onToggleUser, 
   onDeleteUser 
 }) {
+  const { isDark } = useTheme();
+  
   const filteredUsers = users.filter(user => 
     user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <Card className="bg-slate-900/80 border-slate-800">
-      <div className="p-6 border-b border-slate-800">
+    <Card className={`transition-colors duration-300 ${
+      isDark 
+        ? 'bg-slate-900/80 border-slate-800' 
+        : 'bg-white/80 border-slate-200'
+    }`}>
+      <div className={`p-6 border-b transition-colors duration-300 ${
+        isDark ? 'border-slate-800' : 'border-slate-200'
+      }`}>
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+          <h2 className={`text-xl font-semibold flex items-center gap-2 transition-colors duration-300 ${
+            isDark ? 'text-white' : 'text-slate-800'
+          }`}>
             <Users className="w-5 h-5" />
             مدیریت کاربران
           </h2>
@@ -50,7 +61,11 @@ function AdminUsers({
             <Button
               onClick={onSendEmail}
               variant="outline"
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              className={`transition-colors duration-300 ${
+                isDark 
+                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-100'
+              }`}
             >
               <Send className="w-4 h-4 mr-2" />
               ارسال ایمیل
@@ -61,21 +76,31 @@ function AdminUsers({
       <div className="p-6">
         <div className="mb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-300 ${
+              isDark ? 'text-slate-400' : 'text-slate-500'
+            }`} />
             <Input
               placeholder="جستجو در کاربران..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 bg-slate-800 border-slate-700 text-white"
+              className={`pl-10 transition-colors duration-300 ${
+                isDark 
+                  ? 'bg-slate-800 border-slate-700 text-white' 
+                  : 'bg-white border-slate-300 text-slate-800'
+              }`}
             />
           </div>
         </div>
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {filteredUsers.map((user) => (
-            <div key={user.id} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
+            <div key={user.id} className={`flex items-center justify-between p-4 rounded-lg transition-colors duration-300 ${
+              isDark ? 'bg-slate-800/50' : 'bg-slate-100/50'
+            }`}>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-white">{user.full_name}</p>
+                  <p className={`font-medium transition-colors duration-300 ${
+                    isDark ? 'text-white' : 'text-slate-800'
+                  }`}>{user.full_name}</p>
                   <Badge variant={user.is_active ? "default" : "secondary"}>
                     {user.is_active ? "فعال" : "غیرفعال"}
                   </Badge>
@@ -83,8 +108,12 @@ function AdminUsers({
                     <Badge variant="destructive">سوپرکاربر</Badge>
                   )}
                 </div>
-                <p className="text-sm text-slate-400">{user.email}</p>
-                <p className="text-xs text-slate-500">
+                <p className={`text-sm transition-colors duration-300 ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}>{user.email}</p>
+                <p className={`text-xs transition-colors duration-300 ${
+                  isDark ? 'text-slate-500' : 'text-slate-400'
+                }`}>
                   عضویت: {new Date(user.created_at).toLocaleDateString()}
                 </p>
               </div>

@@ -73,7 +73,7 @@
   font-display: swap;
 }
 
-/* CSS Variables */
+/* CSS Variables for Light Theme */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -81,6 +81,44 @@
   --primary-700: #2563eb;
   --accent-400: #8b5cf6;
   --accent-500: #7c3aed;
+  
+  /* Light theme specific colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --sidebar-bg: #f8fafc;
+  --sidebar-border: #e2e8f0;
+  --card-bg: #ffffff;
+  --hover-bg: #f1f5f9;
+  --active-bg: #e0f2fe;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  
+  /* Dark theme specific colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  --sidebar-bg: #1e293b;
+  --sidebar-border: #334155;
+  --card-bg: #1e293b;
+  --hover-bg: #334155;
+  --active-bg: #1e40af;
+  --shadow: rgba(0, 0, 0, 0.3);
 }
 
 @theme inline {
@@ -88,13 +126,6 @@
   --color-foreground: var(--foreground);
   --font-sans: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 /* Base Styles */

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useChatApi } from "@/integrations/chatApi";
 import { parseMaybeJson, formatTime } from "@/utils";
 import MessageBubble from "../components/chat/MessageBubble";
@@ -107,6 +108,7 @@ function createWelcomeMessage() {
 const Chat = memo(function Chat() {
   const router = useRouter();
   const { initializing, isAuthenticated, getAccessToken } = useAuth();
+  const { isDark } = useTheme();
   const { createChat, fetchMessages, listActiveChats, listArchivedChats } = useChatApi();
 
   const [messages, setMessages] = useState([]);
@@ -421,18 +423,32 @@ const Chat = memo(function Chat() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex flex-col h-full bg-slate-900">
+    <div className={`flex flex-col h-full transition-colors duration-300 ${
+      isDark ? 'bg-slate-900' : 'bg-slate-50'
+    }`}>
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 px-4 md:px-6 py-4 md:ml-72">
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-sm border-b px-4 md:px-6 py-4 md:ml-72 transition-colors duration-300 ${
+        isDark 
+          ? 'bg-slate-900/95 border-slate-700' 
+          : 'bg-white/95 border-slate-200'
+      }`}>
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors duration-200 text-white md:hidden" />
+            <SidebarTrigger className={`p-2 rounded-lg transition-colors duration-200 md:hidden ${
+              isDark 
+                ? 'hover:bg-slate-800 text-white' 
+                : 'hover:bg-slate-100 text-slate-800'
+            }`} />
             <div className={`w-2 h-2 rounded-full ${socketConnected ? "bg-green-400" : "bg-red-500"} animate-pulse hidden md:block`} />
             <div>
-              <h1 className="text-base md:text-lg font-semibold text-white truncate max-w-[150px] sm:max-w-xs md:max-w-md">
+              <h1 className={`text-base md:text-lg font-semibold truncate max-w-[150px] sm:max-w-xs md:max-w-md transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-slate-800'
+              }`}>
                 {currentSession?.title || "دستیار هوشمند آری"}
               </h1>
-              <p className="text-xs md:text-sm text-slate-400">
+              <p className={`text-xs md:text-sm transition-colors duration-300 ${
+                isDark ? 'text-slate-400' : 'text-slate-500'
+              }`}>
                 {socketConnected ? "همیشه در خدمت شما" : "در حال تلاش برای اتصال..."}
               </p>
             </div>
@@ -442,7 +458,11 @@ const Chat = memo(function Chat() {
             onClick={createNewSession}
             variant="outline"
             size="sm"
-            className="border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent"
+            className={`transition-colors duration-300 ${
+              isDark 
+                ? 'border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent' 
+                : 'border-slate-300 hover:border-blue-500 text-slate-600 hover:text-blue-600 bg-transparent'
+            }`}
             disabled={isSending}
           >
             <Plus className="w-4 h-4 md:mr-2" />
@@ -457,16 +477,26 @@ const Chat = memo(function Chat() {
           {isLoading ? (
             <div className="text-center py-10">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-sm text-slate-400">در حال آماده‌سازی گفتگو...</p>
+              <p className={`text-sm transition-colors duration-300 ${
+                isDark ? 'text-slate-400' : 'text-slate-500'
+              }`}>در حال آماده‌سازی گفتگو...</p>
             </div>
           ) : !hasMessages ? (
-            <div className="max-w-md mx-auto py-12 px-6 bg-slate-800/60 border border-slate-700 rounded-3xl shadow-xl backdrop-blur-sm">
+            <div className={`max-w-md mx-auto py-12 px-6 rounded-3xl shadow-xl backdrop-blur-sm transition-colors duration-300 ${
+              isDark 
+                ? 'bg-slate-800/60 border border-slate-700' 
+                : 'bg-white/60 border border-slate-300'
+            }`}>
               <div className="flex flex-col items-center">
                 <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4 shadow-lg transform-gpu hover:scale-105 transition-transform">
                   <Sparkles className="w-9 h-9 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">هر سوالی داری بپرس</h2>
-                <p className="text-sm text-slate-300 mb-6">هر سوالی داشتی بپرس، من اینجا هستم تا کمک کنم!</p>
+                <h2 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
+                  isDark ? 'text-white' : 'text-slate-800'
+                }`}>هر سوالی داری بپرس</h2>
+                <p className={`text-sm mb-6 transition-colors duration-300 ${
+                  isDark ? 'text-slate-300' : 'text-slate-600'
+                }`}>هر سوالی داشتی بپرس، من اینجا هستم تا کمک کنم!</p>
               </div>
             </div>
           ) : (
@@ -486,7 +516,9 @@ const Chat = memo(function Chat() {
           </AnimatePresence>
 
           {statusMessage && (
-            <div className="text-center text-xs text-slate-400 mt-4">
+            <div className={`text-center text-xs mt-4 transition-colors duration-300 ${
+              isDark ? 'text-slate-400' : 'text-slate-500'
+            }`}>
               {statusMessage}
             </div>
           )}

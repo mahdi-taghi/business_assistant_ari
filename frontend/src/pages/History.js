@@ -16,6 +16,7 @@ import {
 import SessionCard from "../components/history/SessionCard";
 import { useChatApi } from "@/integrations/chatApi";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function History() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function History() {
   const [lastRefreshTime, setLastRefreshTime] = useState(null);
   const { listActiveChats } = useChatApi();
   const { isAuthenticated, getAccessToken } = useAuth();
+  const { isDark } = useTheme();
   const refreshIntervalRef = useRef(null);
   const lastRefreshRef = useRef(Date.now());
 
@@ -124,21 +126,31 @@ export default function History() {
   });
 
   return (
-    <div className="h-full bg-slate-900">
+    <div className={`h-full transition-colors duration-300 ${
+      isDark ? 'bg-slate-900' : 'bg-slate-50'
+    }`}>
       <div className="w-full flex flex-col">
         {/* Header */}
-        <div className="p-4 md:p-6 border-b border-slate-700/50 bg-gradient-to-r from-slate-900/95 to-slate-800/95 backdrop-blur-sm">
+        <div className={`p-4 md:p-6 border-b backdrop-blur-sm transition-colors duration-300 ${
+          isDark 
+            ? 'border-slate-700/50 bg-gradient-to-r from-slate-900/95 to-slate-800/95' 
+            : 'border-slate-200/50 bg-gradient-to-r from-white/95 to-slate-100/95'
+        }`}>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-white">تاریخچه چت</h1>
+              <h1 className={`text-xl font-bold transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-slate-800'
+              }`}>تاریخچه چت</h1>
             </div>
             
             <div className="flex items-center gap-3">
               {lastRefreshTime && (
-                <span className="text-xs text-slate-400">
+                <span className={`text-xs transition-colors duration-300 ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}>
                   آخرین بروزرسانی: {lastRefreshTime.toLocaleTimeString('fa-IR')}
                 </span>
               )}
@@ -147,7 +159,11 @@ export default function History() {
                 variant="outline"
                 size="sm"
                 disabled={isRefreshing}
-                className="border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent"
+                className={`transition-colors duration-300 ${
+                  isDark 
+                    ? 'border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-400 bg-transparent' 
+                    : 'border-slate-300 hover:border-blue-500 text-slate-600 hover:text-blue-600 bg-transparent'
+                }`}
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                 {isRefreshing ? 'در حال بروزرسانی...' : 'بروزرسانی'}
@@ -174,7 +190,7 @@ export default function History() {
                 }}
               >
                 <div className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
-                  isSearchFocused ? 'text-blue-400' : 'text-slate-400'
+                  isSearchFocused ? 'text-blue-400' : (isDark ? 'text-slate-400' : 'text-slate-500')
                 }`}>
                   <Search className="w-4 h-4" />
                 </div>
@@ -185,10 +201,18 @@ export default function History() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
-                  className={`pl-10 pr-10 h-12 bg-slate-800/60 border-2 transition-all duration-300 text-slate-100 placeholder-slate-400 rounded-xl ${
-                    isSearchFocused 
-                      ? 'border-blue-500/50 shadow-lg shadow-blue-500/10 bg-slate-800/80' 
-                      : 'border-slate-700/50 hover:border-slate-600/50'
+                  className={`pl-10 pr-10 h-12 border-2 transition-all duration-300 rounded-xl ${
+                    isDark 
+                      ? `bg-slate-800/60 text-slate-100 placeholder-slate-400 ${
+                          isSearchFocused 
+                            ? 'border-blue-500/50 shadow-lg shadow-blue-500/10 bg-slate-800/80' 
+                            : 'border-slate-700/50 hover:border-slate-600/50'
+                        }`
+                      : `bg-white/60 text-slate-800 placeholder-slate-500 ${
+                          isSearchFocused 
+                            ? 'border-blue-500/50 shadow-lg shadow-blue-500/10 bg-white/80' 
+                            : 'border-slate-300/50 hover:border-slate-400/50'
+                        }`
                   }`}
                 />
                 
@@ -200,9 +224,15 @@ export default function History() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-slate-700 hover:bg-slate-600 rounded-full flex items-center justify-center transition-colors duration-200"
+                      className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-200 ${
+                        isDark 
+                          ? 'bg-slate-700 hover:bg-slate-600' 
+                          : 'bg-slate-200 hover:bg-slate-300'
+                      }`}
                     >
-                      <X className="w-3 h-3 text-slate-300" />
+                      <X className={`w-3 h-3 transition-colors duration-200 ${
+                        isDark ? 'text-slate-300' : 'text-slate-600'
+                      }`} />
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -215,7 +245,9 @@ export default function History() {
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 5 }}
-                    className="mt-2 text-xs text-slate-400"
+                    className={`mt-2 text-xs transition-colors duration-300 ${
+                      isDark ? 'text-slate-400' : 'text-slate-500'
+                    }`}
                   >
                     {filteredSessions.length} گفتگو یافت شد
                   </motion.div>
@@ -230,27 +262,41 @@ export default function History() {
               transition={{ duration: 0.3, delay: 0.1 }}
             >
               <div className="relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                <div className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}>
                   <Filter className="w-4 h-4" />
                 </div>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="pl-10 h-12 bg-slate-800/60 border-2 border-slate-700/50 hover:border-slate-600/50 text-slate-100 rounded-xl transition-all duration-300 hover:bg-slate-800/80">
+                  <SelectTrigger className={`pl-10 h-12 border-2 rounded-xl transition-all duration-300 ${
+                    isDark 
+                      ? 'bg-slate-800/60 border-slate-700/50 hover:border-slate-600/50 text-slate-100 hover:bg-slate-800/80' 
+                      : 'bg-white/60 border-slate-300/50 hover:border-slate-400/50 text-slate-800 hover:bg-white/80'
+                  }`}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="recent" className="text-slate-100 hover:bg-slate-700 focus:bg-slate-700">
+                  <SelectContent className={`transition-colors duration-300 ${
+                    isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'
+                  }`}>
+                    <SelectItem value="recent" className={`transition-colors duration-300 ${
+                      isDark ? 'text-slate-100 hover:bg-slate-700 focus:bg-slate-700' : 'text-slate-800 hover:bg-slate-100 focus:bg-slate-100'
+                    }`}>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         جدیدترین
                       </div>
                     </SelectItem>
-                    <SelectItem value="oldest" className="text-slate-100 hover:bg-slate-700 focus:bg-slate-700">
+                    <SelectItem value="oldest" className={`transition-colors duration-300 ${
+                      isDark ? 'text-slate-100 hover:bg-slate-700 focus:bg-slate-700' : 'text-slate-800 hover:bg-slate-100 focus:bg-slate-100'
+                    }`}>
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         قدیمی‌ترین
                       </div>
                     </SelectItem>
-                    <SelectItem value="messages" className="text-slate-100 hover:bg-slate-700 focus:bg-slate-700">
+                    <SelectItem value="messages" className={`transition-colors duration-300 ${
+                      isDark ? 'text-slate-100 hover:bg-slate-700 focus:bg-slate-700' : 'text-slate-800 hover:bg-slate-100 focus:bg-slate-100'
+                    }`}>
                       <div className="flex items-center gap-2">
                         <MessageSquare className="w-4 h-4" />
                         بیشترین پیام
@@ -269,17 +315,27 @@ export default function History() {
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2" />
-                <p className="text-slate-400 text-sm">در حال بارگذاری گفتگوها...</p>
+                <p className={`text-sm transition-colors duration-300 ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}>در حال بارگذاری گفتگوها...</p>
               </div>
             ) : sortedSessions.length === 0 ? (
               <div className="text-center py-8">
-                <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">هیچ گفتگویی یافت نشد</p>
+                <MessageSquare className={`w-12 h-12 mx-auto mb-3 transition-colors duration-300 ${
+                  isDark ? 'text-slate-600' : 'text-slate-400'
+                }`} />
+                <p className={`transition-colors duration-300 ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}>هیچ گفتگویی یافت نشد</p>
                 <Button
                   onClick={() => navigate(createPageUrl("Chat"))}
                   variant="outline"
                   size="sm"
-                  className="mt-3 border-slate-700 text-slate-300 hover:text-blue-400"
+                  className={`mt-3 transition-colors duration-300 ${
+                    isDark 
+                      ? 'border-slate-700 text-slate-300 hover:text-blue-400' 
+                      : 'border-slate-300 text-slate-600 hover:text-blue-600'
+                  }`}
                 >
                   شروع چت
                 </Button>

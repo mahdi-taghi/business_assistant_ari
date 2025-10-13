@@ -28,6 +28,7 @@ import { motion } from "framer-motion";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 import StatsCard from "../components/profile/StatsCard";
 import { useChatApi } from "@/integrations/chatApi";
@@ -53,6 +54,7 @@ function formatLongDate(value) {
 export default function Profile() {
   const router = useRouter();
   const { user, updateProfile, authenticatedRequest } = useAuth();
+  const { isDark } = useTheme();
   const [stats, setStats] = useState({ totalChats: 0, totalMessages: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
@@ -212,14 +214,18 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-900">
+      <div className={`flex items-center justify-center h-screen transition-colors duration-300 ${
+        isDark ? 'bg-slate-900' : 'bg-slate-50'
+      }`}>
         <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-slate-900 p-4 md:p-6">
+    <div className={`h-full overflow-y-auto p-4 md:p-6 transition-colors duration-300 ${
+      isDark ? 'bg-slate-900' : 'bg-slate-50'
+    }`}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -227,10 +233,18 @@ export default function Profile() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-4 mb-8"
         >
-          <SidebarTrigger className="hover:bg-slate-800 p-2 rounded-lg transition-colors duration-200 text-white md:hidden" />
+          <SidebarTrigger className={`p-2 rounded-lg transition-colors duration-200 md:hidden ${
+            isDark 
+              ? 'hover:bg-slate-800 text-white' 
+              : 'hover:bg-slate-100 text-slate-800'
+          }`} />
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-2xl md:text-3xl font-bold text-white">پروفایل و تنظیمات</h1>
-            <p className="text-slate-400 hidden md:block">حساب کاربری و تنظیمات خود را مدیریت کنید</p>
+            <h1 className={`text-2xl md:text-3xl font-bold transition-colors duration-300 ${
+              isDark ? 'text-white' : 'text-slate-800'
+            }`}>پروفایل و تنظیمات</h1>
+            <p className={`hidden md:block transition-colors duration-300 ${
+              isDark ? 'text-slate-400' : 'text-slate-500'
+            }`}>حساب کاربری و تنظیمات خود را مدیریت کنید</p>
           </div>
         </motion.div>
 
@@ -283,13 +297,17 @@ export default function Profile() {
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <div className="flex space-x-1 bg-slate-800/50 p-1 rounded-lg">
+          <div className={`flex space-x-1 p-1 rounded-lg transition-colors duration-300 ${
+            isDark ? 'bg-slate-800/50' : 'bg-slate-200/50'
+          }`}>
             <button
               onClick={() => setActiveTab('profile')}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
                 activeTab === 'profile'
                   ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  : isDark 
+                    ? 'text-slate-400 hover:text-white hover:bg-slate-700/50' 
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
               }`}
             >
               <UserIcon className="w-4 h-4" />
@@ -300,7 +318,9 @@ export default function Profile() {
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
                 activeTab === 'account'
                   ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  : isDark 
+                    ? 'text-slate-400 hover:text-white hover:bg-slate-700/50' 
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50'
               }`}
             >
               <Settings className="w-4 h-4" />
@@ -316,10 +336,16 @@ export default function Profile() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="bg-slate-800/60 border-slate-700/50">
+            <Card className={`transition-colors duration-300 ${
+              isDark 
+                ? 'bg-slate-800/60 border-slate-700/50' 
+                : 'bg-white/60 border-slate-300/50'
+            }`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl text-white flex items-center gap-2">
+                  <CardTitle className={`text-xl flex items-center gap-2 transition-colors duration-300 ${
+                    isDark ? 'text-white' : 'text-slate-800'
+                  }`}>
                     <UserIcon className="w-5 h-5" />
                     اطلاعات پروفایل
                   </CardTitle>
@@ -329,7 +355,11 @@ export default function Profile() {
                         onClick={() => setIsEditingProfile(true)}
                         variant="outline"
                         size="sm"
-                        className="border-slate-700 text-slate-300 hover:text-blue-400"
+                        className={`transition-colors duration-300 ${
+                          isDark 
+                            ? 'border-slate-700 text-slate-300 hover:text-blue-400' 
+                            : 'border-slate-300 text-slate-600 hover:text-blue-600'
+                        }`}
                       >
                         <Edit3 className="w-4 h-4 mr-2" />
                         ویرایش پروفایل
@@ -340,7 +370,11 @@ export default function Profile() {
                         onClick={() => setIsChangingPassword(true)}
                         variant="outline"
                         size="sm"
-                        className="border-slate-700 text-slate-300 hover:text-orange-400"
+                        className={`transition-colors duration-300 ${
+                          isDark 
+                            ? 'border-slate-700 text-slate-300 hover:text-orange-400' 
+                            : 'border-slate-300 text-slate-600 hover:text-orange-600'
+                        }`}
                       >
                         <Lock className="w-4 h-4 mr-2" />
                         تغییر رمز عبور
@@ -361,7 +395,11 @@ export default function Profile() {
                           onClick={handleProfileCancel}
                           variant="outline"
                           size="sm"
-                          className="border-slate-700 text-slate-300"
+                          className={`transition-colors duration-300 ${
+                            isDark 
+                              ? 'border-slate-700 text-slate-300' 
+                              : 'border-slate-300 text-slate-600'
+                          }`}
                         >
                           <X className="w-4 h-4 mr-2" />
                           لغو
@@ -383,7 +421,11 @@ export default function Profile() {
                           onClick={handlePasswordCancel}
                           variant="outline"
                           size="sm"
-                          className="border-slate-700 text-slate-300"
+                          className={`transition-colors duration-300 ${
+                            isDark 
+                              ? 'border-slate-700 text-slate-300' 
+                              : 'border-slate-300 text-slate-600'
+                          }`}
                         >
                           <X className="w-4 h-4 mr-2" />
                           لغو
@@ -405,18 +447,26 @@ export default function Profile() {
                 {/* Profile Information Form */}
                 {isEditingProfile && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <h3 className={`text-lg font-semibold flex items-center gap-2 transition-colors duration-300 ${
+                      isDark ? 'text-white' : 'text-slate-800'
+                    }`}>
                       <Edit3 className="w-5 h-5" />
                       ویرایش اطلاعات شخصی
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Label htmlFor="full_name" className="text-slate-300">نام کامل</Label>
+                        <Label htmlFor="full_name" className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>نام کامل</Label>
                         <Input
                           id="full_name"
                           value={profileForm.full_name}
                           onChange={(e) => setProfileForm(prev => ({ ...prev, full_name: e.target.value }))}
-                          className="mt-1 bg-slate-800/50 border-slate-700/50 text-slate-100"
+                          className={`mt-1 transition-colors duration-300 ${
+                            isDark 
+                              ? 'bg-slate-800/50 border-slate-700/50 text-slate-100' 
+                              : 'bg-white/50 border-slate-300/50 text-slate-800'
+                          }`}
                           placeholder="نام کامل خود را وارد کنید"
                         />
                         {formErrors.full_name && (
@@ -425,13 +475,19 @@ export default function Profile() {
                       </div>
                       
                       <div>
-                        <Label htmlFor="email" className="text-slate-300">ایمیل</Label>
+                        <Label htmlFor="email" className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>ایمیل</Label>
                         <Input
                           id="email"
                           type="email"
                           value={profileForm.email}
                           onChange={(e) => setProfileForm(prev => ({ ...prev, email: e.target.value }))}
-                          className="mt-1 bg-slate-800/50 border-slate-700/50 text-slate-100"
+                          className={`mt-1 transition-colors duration-300 ${
+                            isDark 
+                              ? 'bg-slate-800/50 border-slate-700/50 text-slate-100' 
+                              : 'bg-white/50 border-slate-300/50 text-slate-800'
+                          }`}
                           placeholder="ایمیل خود را وارد کنید"
                         />
                         {formErrors.email && (
@@ -440,12 +496,18 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <Label htmlFor="phone" className="text-slate-300">شماره تلفن</Label>
+                        <Label htmlFor="phone" className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>شماره تلفن</Label>
                         <Input
                           id="phone"
                           value={profileForm.phone}
                           onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
-                          className="mt-1 bg-slate-800/50 border-slate-700/50 text-slate-100"
+                          className={`mt-1 transition-colors duration-300 ${
+                            isDark 
+                              ? 'bg-slate-800/50 border-slate-700/50 text-slate-100' 
+                              : 'bg-white/50 border-slate-300/50 text-slate-800'
+                          }`}
                           placeholder="شماره تلفن خود را وارد کنید"
                         />
                         {formErrors.phone && (
@@ -459,26 +521,36 @@ export default function Profile() {
                 {/* Password Change Form */}
                 {isChangingPassword && (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <h3 className={`text-lg font-semibold flex items-center gap-2 transition-colors duration-300 ${
+                      isDark ? 'text-white' : 'text-slate-800'
+                    }`}>
                       <Lock className="w-5 h-5" />
                       تغییر رمز عبور
                     </h3>
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="current_password" className="text-slate-300">رمز عبور فعلی</Label>
+                        <Label htmlFor="current_password" className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>رمز عبور فعلی</Label>
                         <div className="relative mt-1">
                           <Input
                             id="current_password"
                             type={showPasswords.current ? "text" : "password"}
                             value={passwordForm.current_password}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, current_password: e.target.value }))}
-                            className="pr-10 bg-slate-800/50 border-slate-700/50 text-slate-100"
+                            className={`pr-10 transition-colors duration-300 ${
+                              isDark 
+                                ? 'bg-slate-800/50 border-slate-700/50 text-slate-100' 
+                                : 'bg-white/50 border-slate-300/50 text-slate-800'
+                            }`}
                             placeholder="رمز عبور فعلی خود را وارد کنید"
                           />
                           <button
                             type="button"
                             onClick={() => togglePasswordVisibility('current')}
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                            className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                              isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-600'
+                            }`}
                           >
                             {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -489,20 +561,28 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <Label htmlFor="new_password" className="text-slate-300">رمز عبور جدید</Label>
+                        <Label htmlFor="new_password" className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>رمز عبور جدید</Label>
                         <div className="relative mt-1">
                           <Input
                             id="new_password"
                             type={showPasswords.new ? "text" : "password"}
                             value={passwordForm.new_password}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, new_password: e.target.value }))}
-                            className="pr-10 bg-slate-800/50 border-slate-700/50 text-slate-100"
+                            className={`pr-10 transition-colors duration-300 ${
+                              isDark 
+                                ? 'bg-slate-800/50 border-slate-700/50 text-slate-100' 
+                                : 'bg-white/50 border-slate-300/50 text-slate-800'
+                            }`}
                             placeholder="رمز عبور جدید (حداقل 8 کاراکتر)"
                           />
                           <button
                             type="button"
                             onClick={() => togglePasswordVisibility('new')}
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                            className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                              isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-600'
+                            }`}
                           >
                             {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -513,20 +593,28 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <Label htmlFor="confirm_password" className="text-slate-300">تأیید رمز عبور جدید</Label>
+                        <Label htmlFor="confirm_password" className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>تأیید رمز عبور جدید</Label>
                         <div className="relative mt-1">
                           <Input
                             id="confirm_password"
                             type={showPasswords.confirm ? "text" : "password"}
                             value={passwordForm.confirm_password}
                             onChange={(e) => setPasswordForm(prev => ({ ...prev, confirm_password: e.target.value }))}
-                            className="pr-10 bg-slate-800/50 border-slate-700/50 text-slate-100"
+                            className={`pr-10 transition-colors duration-300 ${
+                              isDark 
+                                ? 'bg-slate-800/50 border-slate-700/50 text-slate-100' 
+                                : 'bg-white/50 border-slate-300/50 text-slate-800'
+                            }`}
                             placeholder="رمز عبور جدید را دوباره وارد کنید"
                           />
                           <button
                             type="button"
                             onClick={() => togglePasswordVisibility('confirm')}
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                            className={`absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${
+                              isDark ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-600'
+                            }`}
                           >
                             {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -544,17 +632,29 @@ export default function Profile() {
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Label className="text-slate-300">نام کامل</Label>
-                        <p className="text-white mt-1 flex items-center gap-2">
-                          <UserIcon className="w-4 h-4 text-slate-400" />
+                        <Label className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>نام کامل</Label>
+                        <p className={`mt-1 flex items-center gap-2 transition-colors duration-300 ${
+                          isDark ? 'text-white' : 'text-slate-800'
+                        }`}>
+                          <UserIcon className={`w-4 h-4 transition-colors duration-300 ${
+                            isDark ? 'text-slate-400' : 'text-slate-500'
+                          }`} />
                           {user?.full_name || "تنظیم نشده"}
                         </p>
                       </div>
                       
                       <div>
-                        <Label className="text-slate-300">ایمیل</Label>
-                        <p className="text-white mt-1 flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-slate-400" />
+                        <Label className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>ایمیل</Label>
+                        <p className={`mt-1 flex items-center gap-2 transition-colors duration-300 ${
+                          isDark ? 'text-white' : 'text-slate-800'
+                        }`}>
+                          <Mail className={`w-4 h-4 transition-colors duration-300 ${
+                            isDark ? 'text-slate-400' : 'text-slate-500'
+                          }`} />
                           {user?.email}
                           <Badge variant="secondary" className="bg-green-600/10 text-green-400 ml-2">
                             تأیید شده
@@ -563,9 +663,15 @@ export default function Profile() {
                       </div>
 
                       <div>
-                        <Label className="text-slate-300">شماره تلفن</Label>
-                        <p className="text-white mt-1 flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-slate-400" />
+                        <Label className={`transition-colors duration-300 ${
+                          isDark ? 'text-slate-300' : 'text-slate-600'
+                        }`}>شماره تلفن</Label>
+                        <p className={`mt-1 flex items-center gap-2 transition-colors duration-300 ${
+                          isDark ? 'text-white' : 'text-slate-800'
+                        }`}>
+                          <Phone className={`w-4 h-4 transition-colors duration-300 ${
+                            isDark ? 'text-slate-400' : 'text-slate-500'
+                          }`} />
                           {user?.phone || "تنظیم نشده"}
                         </p>
                       </div>
@@ -585,9 +691,15 @@ export default function Profile() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="bg-slate-800/60 border-slate-700/50">
+            <Card className={`transition-colors duration-300 ${
+              isDark 
+                ? 'bg-slate-800/60 border-slate-700/50' 
+                : 'bg-white/60 border-slate-300/50'
+            }`}>
               <CardHeader>
-                <CardTitle className="text-xl text-white flex items-center gap-2">
+                <CardTitle className={`text-xl flex items-center gap-2 transition-colors duration-300 ${
+                  isDark ? 'text-white' : 'text-slate-800'
+                }`}>
                   <Settings className="w-5 h-5" />
                   جزئیات حساب
                 </CardTitle>
@@ -595,13 +707,19 @@ export default function Profile() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label className="text-slate-300">شناسه حساب</Label>
-                    <p className="text-slate-400 text-sm mt-1 font-mono">
+                    <Label className={`transition-colors duration-300 ${
+                      isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}>شناسه حساب</Label>
+                    <p className={`text-sm mt-1 font-mono transition-colors duration-300 ${
+                      isDark ? 'text-slate-400' : 'text-slate-500'
+                    }`}>
                       {user?.id?.substring(0, 8)}...
                     </p>
                   </div>
                   <div>
-                    <Label className="text-slate-300">نقش</Label>
+                    <Label className={`transition-colors duration-300 ${
+                      isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}>نقش</Label>
                     <div className="mt-1">
                       <Badge 
                         variant="secondary" 
@@ -612,14 +730,22 @@ export default function Profile() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-slate-300">عضو از</Label>
-                    <p className="text-slate-400 text-sm mt-1">
+                    <Label className={`transition-colors duration-300 ${
+                      isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}>عضو از</Label>
+                    <p className={`text-sm mt-1 transition-colors duration-300 ${
+                      isDark ? 'text-slate-400' : 'text-slate-500'
+                    }`}>
                       {user?.created_date ? formatLongDate(user.created_date) : "اخیراً"}
                     </p>
                   </div>
                   <div>
-                    <Label className="text-slate-300">آخرین بروزرسانی</Label>
-                    <p className="text-slate-400 text-sm mt-1">
+                    <Label className={`transition-colors duration-300 ${
+                      isDark ? 'text-slate-300' : 'text-slate-600'
+                    }`}>آخرین بروزرسانی</Label>
+                    <p className={`text-sm mt-1 transition-colors duration-300 ${
+                      isDark ? 'text-slate-400' : 'text-slate-500'
+                    }`}>
                       {user?.updated_date ? formatLongDate(user.updated_date) : "هرگز"}
                     </p>
                   </div>
