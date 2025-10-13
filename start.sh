@@ -13,7 +13,7 @@ if [ $? != 0 ]; then
   # اجرای دستورات بک‌اند در پین اصلی (پین 0)
   tmux send-keys -t $SESSION_NAME:dev_view.0 "cd ai" C-m
   tmux send-keys -t $SESSION_NAME:dev_view.0 "conda activate myenv" C-m
-  tmux send-keys -t $SESSION_NAME:dev_view.0 "python worker.py" C-m
+  tmux send-keys -t $SESSION_NAME:dev_view.0 "python ai_worker.py" C-m
 
   # 2. تقسیم افقی پنجره جاری (ایجاد پین جدید)
   # -v یعنی تقسیم عمودی صفحه، که باعث ایجاد پین‌های افقی می‌شود (یکی بالا، یکی پایین)
