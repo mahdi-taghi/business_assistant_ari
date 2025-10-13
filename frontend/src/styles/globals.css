@@ -1,5 +1,78 @@
 @import "tailwindcss";
 
+/* Vazirmatn Font Face Definitions */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/font/webfonts/Vazirmatn-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* CSS Variables */
 :root {
   --background: #ffffff;
@@ -13,8 +86,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,7 +101,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Vazirmatn', Arial, Helvetica, sans-serif;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
@@ -179,4 +252,50 @@ textarea.scrollable {
   .text-slate-300 {
     color: #ffffff !important;
   }
+}
+
+/* Vazirmatn Font Weight Utilities */
+.font-vazir-thin {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 100;
+}
+
+.font-vazir-extralight {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 200;
+}
+
+.font-vazir-light {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+}
+
+.font-vazir-regular {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+}
+
+.font-vazir-medium {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+}
+
+.font-vazir-semibold {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.font-vazir-bold {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.font-vazir-extrabold {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+}
+
+.font-vazir-black {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 900;
 }
