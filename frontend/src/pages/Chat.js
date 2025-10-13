@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -427,10 +427,10 @@ const Chat = memo(function Chat() {
       isDark ? 'bg-slate-900' : 'bg-slate-50'
     }`}>
       {/* Fixed Header */}
-      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-sm border-b px-4 md:px-6 py-4 md:ml-72 transition-colors duration-300 ${
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl border-b px-4 md:px-6 py-4 md:ml-72 transition-all duration-500 ${
         isDark 
-          ? 'bg-slate-900/95 border-slate-700' 
-          : 'bg-white/95 border-slate-200'
+          ? 'bg-slate-900/95 border-slate-700/50' 
+          : 'bg-white/95 border-slate-200/50'
       }`}>
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-3">
@@ -449,7 +449,7 @@ const Chat = memo(function Chat() {
               <p className={`text-xs md:text-sm transition-colors duration-300 ${
                 isDark ? 'text-slate-400' : 'text-slate-500'
               }`}>
-                {socketConnected ? "همیشه در خدمت شما" : "در حال تلاش برای اتصال..."}
+                {socketConnected ? "" : "در حال تلاش برای اتصال..."}
               </p>
             </div>
           </div>
@@ -472,33 +472,81 @@ const Chat = memo(function Chat() {
       </div>
 
       {/* Scrollable Messages Area */}
-      <div className="flex-1 overflow-y-auto pt-16 pb-20">
+      <div className="flex-1 overflow-y-auto pt-16 pb-20 custom-scrollbar">
         <div className="max-w-4xl mx-auto px-6 py-8">
           {isLoading ? (
-            <div className="text-center py-10">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className={`text-sm transition-colors duration-300 ${
-                isDark ? 'text-slate-400' : 'text-slate-500'
-              }`}>در حال آماده‌سازی گفتگو...</p>
-            </div>
+            <motion.div 
+              className="text-center py-16"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div 
+                className="w-12 h-12 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <motion.p 
+                className={`text-base transition-colors duration-300 ${
+                  isDark ? 'text-slate-400' : 'text-slate-500'
+                }`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                در حال آماده‌سازی گفتگو...
+              </motion.p>
+            </motion.div>
           ) : !hasMessages ? (
-            <div className={`max-w-md mx-auto py-12 px-6 rounded-3xl shadow-xl backdrop-blur-sm transition-colors duration-300 ${
-              isDark 
-                ? 'bg-slate-800/60 border border-slate-700' 
-                : 'bg-white/60 border border-slate-300'
-            }`}>
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className={`max-w-md mx-auto py-16 px-8 rounded-3xl shadow-2xl backdrop-blur-sm transition-colors duration-300 ${
+                isDark 
+                  ? 'bg-slate-800/60 border border-slate-700' 
+                  : 'bg-white/60 border border-slate-300'
+              }`}
+            >
               <div className="flex flex-col items-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4 shadow-lg transform-gpu hover:scale-105 transition-transform">
-                  <Sparkles className="w-9 h-9 text-white" />
-                </div>
-                <h2 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
-                  isDark ? 'text-white' : 'text-slate-800'
-                }`}>هر سوالی داری بپرس</h2>
-                <p className={`text-sm mb-6 transition-colors duration-300 ${
-                  isDark ? 'text-slate-300' : 'text-slate-600'
-                }`}>هر سوالی داشتی بپرس، من اینجا هستم تا کمک کنم!</p>
+                <motion.div 
+                  className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-6 shadow-lg"
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    boxShadow: [
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                      "0 25px 50px -12px rgba(59, 130, 246, 0.4)",
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                    ]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Sparkles className="w-12 h-12 text-white" />
+                </motion.div>
+                
+                <motion.h2 
+                  className={`text-3xl font-bold mb-4 transition-colors duration-300 ${
+                    isDark ? 'text-white' : 'text-slate-800'
+                  }`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  سوال خود را بپرسید
+                </motion.h2>
+                
+                <motion.p 
+                  className={`text-base mb-8 transition-colors duration-300 ${
+                    isDark ? 'text-slate-300' : 'text-slate-600'
+                  }`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  هر سوالی داشتی بپرس، من اینجا هستم تا کمک کنم!
+                </motion.p>
               </div>
-            </div>
+            </motion.div>
           ) : (
             <AnimatePresence>
               {messages.map((message, index) => (
@@ -532,7 +580,7 @@ const Chat = memo(function Chat() {
         <ChatInput
           onSendMessage={handleSendMessage}
           isLoading={isSending || !socketConnected}
-          placeholder="هر سوالی داری بپرس..."
+          placeholder="سوال خود را بپرسید..."
         />
       </div>
     </div>

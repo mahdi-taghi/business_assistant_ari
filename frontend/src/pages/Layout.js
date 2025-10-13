@@ -1,6 +1,7 @@
 import React, { useCallback, memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { motion } from "framer-motion";
 import { createPageUrl, isAdminUser } from "@/utils";
 import { MessageSquare, History, User, Bot, Sparkles, LogOut, Shield } from "lucide-react";
 import {
@@ -47,11 +48,14 @@ const Layout = memo(function Layout({ children, currentPageName }) {
   }, [logout, router]);
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
+    <div className={`min-h-screen transition-all duration-500 ${
       isDark 
         ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
         : 'bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200'
     }`}>
+      {/* اضافه کردن افکت نور پس‌زمینه */}
+      <div className="fixed inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 pointer-events-none" />
+      
       <style>{`
         :root { --primary-600: #3b82f6; --primary-700: #2563eb; --accent-400: #8b5cf6; --accent-500: #7c3aed; }
         .glow-effect { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
@@ -62,50 +66,75 @@ const Layout = memo(function Layout({ children, currentPageName }) {
 
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
-          <Sidebar className={`fixed left-0 top-0 h-screen w-72 border-r backdrop-blur-sm z-50 flex flex-col hidden md:flex transition-colors duration-300 ${
+          <Sidebar className={`fixed left-0 top-0 h-screen w-72 border-r backdrop-blur-xl z-50 flex flex-col hidden md:flex transition-all duration-500 ${
             isDark 
-              ? 'border-slate-700 bg-slate-900/95' 
-              : 'border-slate-200 bg-white/95'
+              ? 'border-slate-700/50 bg-slate-900/95' 
+              : 'border-slate-200/50 bg-white/95'
           }`}>
             <SidebarHeader className={`border-b p-6 flex-shrink-0 ${
-              isDark ? 'border-slate-700' : 'border-slate-200'
+              isDark ? 'border-slate-700/50' : 'border-slate-200/50'
             }`}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center glow-effect">
-                  <Bot className="w-6 h-6 text-white" />
-                </div>
+              <motion.div 
+                className="flex items-center gap-3"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <motion.div 
+                  className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg"
+                  animate={{
+                    boxShadow: [
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                      "0 25px 50px -12px rgba(59, 130, 246, 0.4)",
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                    ]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Bot className="w-7 h-7 text-white" />
+                </motion.div>
                 <div>
-                  <h2 className={`font-bold text-lg gradient-text ${
+                  <h2 className={`font-bold text-xl gradient-text ${
                     isDark ? 'text-white' : 'text-slate-800'
                   }`}>دستیار هوشمند آری</h2>
-                  <p className={`text-xs ${
+                  <p className={`text-sm ${
                     isDark ? 'text-slate-400' : 'text-slate-500'
                   }`}>سطح سازمانی</p>
                 </div>
-              </div>
+              </motion.div>
             </SidebarHeader>
 
-            <SidebarContent className="p-4 flex-1 overflow-y-auto">
+            <SidebarContent className="p-4 flex-1 overflow-y-auto custom-scrollbar">
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {getNavigationItems(user).map((item) => {
                       const isActive = location.pathname === item.url;
-                      const itemClass = `transition-all duration-300 rounded-xl mb-2 group ${
-                        isActive 
-                          ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-400 border border-blue-500/30' 
-                          : isDark 
-                            ? 'hover:bg-slate-800/50 hover:text-blue-400 text-slate-300' 
-                            : 'hover:bg-slate-100 hover:text-blue-600 text-slate-600'
-                      }`;
-
                       return (
                         <SidebarMenuItem key={item.title}>
-                          <Link href={item.url} className={`flex items-center gap-3 px-4 py-3 ${itemClass}`}>
-                            <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
-                            <span className="font-medium">{item.title}</span>
-                            {isActive && <Sparkles className="w-4 h-4 ml-auto opacity-70" />}
-                          </Link>
+                          <motion.div
+                            whileHover={{ x: 5 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Link href={item.url} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
+                              isActive 
+                                ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-400 border border-blue-500/30 shadow-lg' 
+                                : isDark 
+                                  ? 'hover:bg-slate-800/50 hover:text-blue-400 text-slate-300' 
+                                  : 'hover:bg-slate-100 hover:text-blue-600 text-slate-600'
+                            }`}>
+                              <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+                              <span className="font-medium">{item.title}</span>
+                              {isActive && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  transition={{ type: "spring", stiffness: 300 }}
+                                >
+                                  <Sparkles className="w-4 h-4 ml-auto opacity-70" />
+                                </motion.div>
+                              )}
+                            </Link>
+                          </motion.div>
                         </SidebarMenuItem>
                       );
                     })}

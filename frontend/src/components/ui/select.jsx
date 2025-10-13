@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 function collectSelectItems(children, items = []) {
   React.Children.forEach(children, (child) => {
@@ -19,6 +20,7 @@ function collectSelectItems(children, items = []) {
 }
 
 export function Select({ children, value, onValueChange, className = '', multiple = false, ...rest }) {
+  const { isDark } = useTheme();
   const items = collectSelectItems(children);
   let triggerClassName = '';
 
@@ -40,7 +42,11 @@ export function Select({ children, value, onValueChange, className = '', multipl
     onChange?.(event);
   };
 
-  const baseClassName = 'w-full rounded-md border border-slate-700/50 bg-slate-800/50 text-slate-100 px-3 py-2 appearance-none';
+  const baseClassName = `w-full rounded-md border px-3 py-2 appearance-none transition-colors duration-200 ${
+    isDark 
+      ? 'border-slate-700/50 bg-slate-800/50 text-slate-100' 
+      : 'border-slate-300/50 bg-white/50 text-slate-800'
+  }`;
   const combinedClassName = [baseClassName, triggerClassName, className].filter(Boolean).join(' ');
 
   const normalizedValue = multiple
