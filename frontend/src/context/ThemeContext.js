@@ -16,6 +16,8 @@ export const ThemeProvider = ({ children }) => {
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const savedTheme = localStorage.getItem('theme');
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initialTheme = savedTheme || systemTheme;
@@ -31,21 +33,27 @@ export const ThemeProvider = ({ children }) => {
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', newTheme);
+      document.documentElement.setAttribute('data-theme', newTheme);
+    }
   };
 
   // Set specific theme
   const setSpecificTheme = (newTheme) => {
     if (newTheme === 'dark' || newTheme === 'light') {
       setTheme(newTheme);
-      localStorage.setItem('theme', newTheme);
-      document.documentElement.setAttribute('data-theme', newTheme);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('theme', newTheme);
+        document.documentElement.setAttribute('data-theme', newTheme);
+      }
     }
   };
 
   // Listen for system theme changes
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
       if (!localStorage.getItem('theme')) {

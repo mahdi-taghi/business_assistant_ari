@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Bot, User } from "lucide-react";
 import { detectTextDirection, formatTime } from "@/utils";
@@ -12,6 +12,11 @@ const MessageBubble = memo(function MessageBubble({ message, isLatest }) {
   const content = message?.content || "";
   const textDirection = detectTextDirection(content);
   const { isDark } = useTheme();
+
+  // Memoize expensive calculations
+  const formattedTime = useMemo(() => {
+    return timestamp ? formatTime(timestamp) : null;
+  }, [timestamp]);
 
   if (isSystem) {
     return (
@@ -106,7 +111,7 @@ const MessageBubble = memo(function MessageBubble({ message, isLatest }) {
           )}
         </motion.div>
         
-        {timestamp && (
+        {formattedTime && (
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -115,7 +120,7 @@ const MessageBubble = memo(function MessageBubble({ message, isLatest }) {
               isDark ? 'text-slate-400 bg-slate-800/50' : 'text-slate-500 bg-slate-100/50'
             }`}
           >
-            {formatTime(timestamp)}
+            {formattedTime}
           </motion.p>
         )}
       </div>

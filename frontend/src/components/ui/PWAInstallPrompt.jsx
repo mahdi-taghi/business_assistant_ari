@@ -9,7 +9,7 @@ const PWAInstallPrompt = () => {
 
   useEffect(() => {
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
       return;
     }
@@ -28,11 +28,13 @@ const PWAInstallPrompt = () => {
       setDeferredPrompt(null);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.addEventListener('appinstalled', handleAppInstalled);
+    }
 
     // Check if user has dismissed the prompt before
-    const dismissedBefore = localStorage.getItem('pwa-install-dismissed');
+    const dismissedBefore = typeof window !== 'undefined' ? localStorage.getItem('pwa-install-dismissed') : null;
     if (dismissedBefore) {
       const dismissedTime = parseInt(dismissedBefore);
       const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
@@ -51,8 +53,10 @@ const PWAInstallPrompt = () => {
     }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.removeEventListener('appinstalled', handleAppInstalled);
+      }
     };
   }, []);
 
@@ -74,7 +78,9 @@ const PWAInstallPrompt = () => {
 
   const handleDismiss = () => {
     setShowInstallPrompt(false);
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    }
   };
 
   if (isInstalled || !showInstallPrompt) {
