@@ -3,3 +3,4 @@
 # =========================
 
 # (empty on purpose) — makes this a package
+from .talk_to_db import talk_to_db

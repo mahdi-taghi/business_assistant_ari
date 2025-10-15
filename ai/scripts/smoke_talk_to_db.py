@@ -12,14 +12,13 @@ os.environ.setdefault("LOG_CONSOLE_LEVEL", "DEBUG")
 os.environ.setdefault("LOG_FILE_LEVEL", "DEBUG")
 
 def main():
-    question = "۱۰ کالای گران که از کشور کره در سال 1400 وارده شده اند چه بوده است؟"
+    question = "چند درصد واردات کد تعرفه 85171210 در سال 1400 از گمرک فرودگاه امام خمینی بوده؟"
     out = talk_to_db(
         question=question,
         user_id="u123",
         user_role="public",
         chat_id="c123",
         is_first_message=True,
-        verbose=True,
     )
     print("\n=== FINAL ANSWER ===")
     print(out)

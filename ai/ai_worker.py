@@ -144,8 +144,7 @@ async def main():
                 user_id=str(user_id),
                 user_role=str(user_role),
                 chat_id=str(chat_id),
-                is_first_message=is_first,
-                verbose=False
+                is_first_message=is_first
             )
             dt = time.perf_counter() - t0
 

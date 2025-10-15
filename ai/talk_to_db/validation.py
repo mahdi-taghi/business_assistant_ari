@@ -5,19 +5,20 @@
 from __future__ import annotations
 import re
 from typing import List
-from .config_logging import logger
 
 _SAFE_START = re.compile(r"^\s*(?:with\b[\s\S]*?select\b|select\b)", re.IGNORECASE)
+# block 'replace' only if NOT followed by '(' (i.e., not a function call)
 _DANGEROUS_ANYWHERE = re.compile(
     r"\b("
-    r"delete|drop|truncate|update|insert|alter|create|replace|"
+    r"delete|drop|truncate|update|insert|alter|create|"
     r"execute|exec|merge|call|grant|revoke|vacuum|analyze|"
     r"refresh\s+materialized\s+view|lock|cluster|listen|unlisten|notify|"
     r"do|security\s+definer|set|reset|begin|commit|rollback|savepoint|"
-    r"pg_read_file|pg_ls_dir|pg_stat_file|lo_import|lo_export"
+    r"pg_read_file|pg_ls_dir|pg_stat_file|lo_import|lo_export|replace(?!\s*\()"
     r")\b",
     re.IGNORECASE,
 )
+
 _PG_SLEEP = re.compile(r"\bpg_sleep\s*\(", re.IGNORECASE)
 _COPY_PROGRAM = re.compile(r"\bcopy\b[\s\S]*\b(program|stdin|stdout)\b", re.IGNORECASE)
 
@@ -98,43 +99,32 @@ def _split_statements(sql: str) -> List[str]:
 
 def validate_query(query: str, max_statements: int = 10) -> bool:
     if not isinstance(query, str):
-        logger.warning("validate_query: query is not a string.")
         return False
     q = query.strip()
     if not q:
-        logger.warning("validate_query: empty query.")
         return False
     try:
         stmts = _split_statements(q)
     except Exception:
-        logger.exception("validate_query: failed to split statements.")
         return False
     if not stmts:
-        logger.warning("validate_query: no statements after split.")
         return False
     if len(stmts) > max_statements:
-        logger.warning("validate_query: too many statements (%d) > %d.", len(stmts), max_statements)
         return False
     for s in stmts:
         s_stripped = s.strip()
         if not _SAFE_START.match(s_stripped):
-            logger.warning("validate_query: statement does not start with SELECT/WITH.")
             return False
         if re.match(r"^\s*with\b", s_stripped, re.IGNORECASE):
             prefix_before_first_select = re.split(r"\bselect\b", s_stripped, 1, flags=re.IGNORECASE)[0]
             if re.search(r"\b(insert|update|delete|merge|alter|create|drop|truncate|replace|execute|exec|call)\b", prefix_before_first_select, re.IGNORECASE):
-                logger.warning("validate_query: WITH clause contains DML/DDL.")
                 return False
         if _DANGEROUS_ANYWHERE.search(s_stripped):
-            logger.warning("validate_query: dangerous keyword found.")
             return False
         if _PG_SLEEP.search(s_stripped):
-            logger.warning("validate_query: pg_sleep detected.")
             return False
         if _COPY_PROGRAM.search(s_stripped):
-            logger.warning("validate_query: COPY PROGRAM/STDIN/STDOUT detected.")
             return False
-    logger.debug("validate_query: query is safe.")
     return True
 
 __all__ = ["validate_query"]

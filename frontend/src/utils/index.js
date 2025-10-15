@@ -79,8 +79,15 @@ export function parseMaybeJson(value, fallback) {
  * @returns {string} Formatted time string
  */
 export function formatTime(iso) {
+  if (!iso) {
+    return '';
+  }
+  
   try {
     const date = new Date(iso);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } catch (error) {
     return '';
